@@ -5,13 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>A Reading Year</title>
 
-<!-- Fonts (only external dependency) -->
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Three.js (CDN only, scene 2 aftermath) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 
 <style>
-  /* Base: pure black, no scroll */
   :root {
     --serif: 'Cormorant Garamond', Georgia, serif;
     --mono: 'JetBrains Mono', ui-monospace, 'Courier New', monospace;
@@ -20,28 +21,23 @@
   html, body { height: 100%; overflow: hidden; background: #000; color: #fff; }
   body { font-family: var(--serif); cursor: default; }
 
-  #field { position: fixed; inset: 0; display: block; z-index: 0; }
+  #field { position: fixed; inset: 0; display: block; z-index: 0; transition: opacity 0.7s ease; }
+  #three-stage { position: fixed; inset: 0; z-index: 1; opacity: 0; transition: opacity 0.7s ease; pointer-events: none; }
 
-  /* Cinematic vignette over the whole frame */
   #vignette {
-    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    position: fixed; inset: 0; z-index: 2; pointer-events: none;
     background: radial-gradient(ellipse at center,
       rgba(0,0,0,0) 40%, rgba(0,0,0,0.4) 80%, rgba(0,0,0,0.82) 100%);
   }
 
-  /* Text overlay never intercepts clicks */
-  #ui { position: fixed; inset: 0; z-index: 2; pointer-events: none; }
+  #ui { position: fixed; inset: 0; z-index: 3; pointer-events: none; }
 
-  /* Chapter marker, top-left */
   #marker {
     position: absolute; top: 34px; left: 38px;
     font-family: var(--mono); text-transform: uppercase;
     letter-spacing: 0.22em; font-size: clamp(13px, 1.2vw, 16px);
-    color: rgba(255,255,255,0.5);
-    opacity: 0; transition: opacity 0.8s ease;
+    color: rgba(255,255,255,0.5); opacity: 0; transition: opacity 0.8s ease;
   }
-
-  /* Scene counter, bottom-right */
   #counter {
     position: absolute; bottom: 30px; right: 38px;
     font-family: var(--mono); letter-spacing: 0.18em;
@@ -49,32 +45,92 @@
     opacity: 0; transition: opacity 0.8s ease;
   }
 
-  /* Scene 3 book title */
-  #book-title {
-    position: absolute; left: 50%; top: 19%;
-    transform: translateX(-50%);
-    font-family: var(--serif); font-style: italic; font-weight: 400;
-    font-size: clamp(28px, 3vw, 44px);
-    color: rgba(255,255,255,0.85);
-    text-align: center; max-width: 80vw;
-    opacity: 0; transition: opacity 1.1s ease;
+  /* Scene 1.B essay cards */
+  #cards { position: absolute; inset: 0; pointer-events: none; }
+  .ecard {
+    position: absolute; width: 38vw; max-width: 560px; padding: 30px 34px;
+    opacity: 0; transition: opacity 0.9s ease;
+  }
+  .ecard .eh {
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.12em;
+    font-size: clamp(16px, 1.7vw, 22px); color: rgba(255,255,255,0.9);
+    margin-bottom: 16px;
+  }
+  .ecard ul { list-style: none; }
+  .ecard li {
+    font-family: var(--serif); font-size: clamp(14px, 1.25vw, 17px);
+    color: rgba(255,255,255,0.75); line-height: 1.42;
+    padding-left: 1.1em; text-indent: -1.1em; margin-bottom: 9px;
+  }
+  .ecard li::before { content: "— "; color: rgba(255,255,255,0.4); }
+  #card0 { top: 7vh;  left: 5vw; }
+  #card1 { top: 7vh;  right: 5vw; }
+  #card2 { bottom: 7vh; left: 5vw; }
+  #card3 { bottom: 7vh; right: 5vw; }
+
+  /* Scene 2.C text */
+  #hiro {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    text-align: center; max-width: 80vw; opacity: 0; transition: opacity 1.2s ease;
+  }
+  #hiro .hh {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(32px, 3.8vw, 56px); color: rgba(255,255,255,0.95);
+    margin-bottom: 34px;
+  }
+  #hiro ul { list-style: none; display: inline-block; text-align: left; }
+  #hiro li {
+    font-family: var(--serif); font-size: clamp(16px, 1.6vw, 20px);
+    color: rgba(255,255,255,0.75); line-height: 1.6;
+  }
+  #hiro .hc {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(19px, 1.9vw, 24px); color: rgba(255,255,255,0.9);
+    margin-top: 34px;
   }
 
-  /* Scene 4 final phrase, bottom-center */
+  /* Scene 3 page + side text */
+  .pagetext {
+    position: absolute; opacity: 0; transition: opacity 1s ease; text-align: center;
+  }
+  .pagetext .ph {
+    font-family: var(--serif); font-style: italic; font-size: 18px;
+    color: rgba(255,255,255,0.85); margin-bottom: 14px;
+  }
+  .pagetext ul { list-style: none; text-align: left; display: inline-block; }
+  .pagetext li {
+    font-family: var(--serif); font-size: 14px; color: rgba(255,255,255,0.8);
+    line-height: 1.5; margin-bottom: 8px;
+    padding-left: 1em; text-indent: -1em;
+  }
+  .pagetext li::before { content: "— "; color: rgba(255,255,255,0.4); }
+  #sidepanel { position: absolute; opacity: 0; transition: opacity 1.1s ease; }
+  #sidepanel .sh {
+    font-family: var(--serif); font-style: italic; font-size: 14px;
+    color: rgba(255,255,255,0.6); margin-bottom: 10px;
+  }
+  #sidepanel ul { list-style: none; }
+  #sidepanel li {
+    font-family: var(--serif); font-size: 12px; color: rgba(255,255,255,0.5);
+    line-height: 1.7;
+  }
+
+  #book-title {
+    position: absolute; left: 50%; top: 18%; transform: translateX(-50%);
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(28px, 3vw, 44px); color: rgba(255,255,255,0.85);
+    text-align: center; max-width: 80vw; opacity: 0; transition: opacity 1.1s ease;
+  }
+
   #final {
-    position: absolute; left: 50%; bottom: 9%;
-    transform: translateX(-50%);
-    font-family: var(--serif); font-weight: 400;
-    font-size: clamp(32px, 3.4vw, 50px);
-    color: rgba(255,255,255,0.95);
-    text-align: center; max-width: 84vw;
+    position: absolute; left: 50%; bottom: 9%; transform: translateX(-50%);
+    font-family: var(--serif); font-size: clamp(32px, 3.4vw, 50px);
+    color: rgba(255,255,255,0.95); text-align: center; max-width: 84vw;
     opacity: 0; transition: opacity 1.4s ease;
   }
 
-  /* Scene 4 covers row */
   #covers {
-    position: absolute; left: 50%; top: 50%;
-    transform: translate(-50%, -50%);
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
     display: flex; gap: clamp(22px, 3.6vw, 60px);
     align-items: flex-start; justify-content: center;
     opacity: 0; transition: opacity 0.6s ease;
@@ -100,34 +156,16 @@
     text-align: center; padding: 14% 12%;
     background: linear-gradient(160deg, #16161b 0%, #0a0a0d 100%);
   }
-  .cover-fallback .fb-title {
-    font-family: var(--serif); font-size: clamp(15px, 1.3vw, 19px);
-    line-height: 1.25; color: rgba(255,255,255,0.85);
-  }
-  .cover-fallback .fb-author {
-    font-family: var(--mono); text-transform: uppercase;
-    letter-spacing: 0.16em; font-size: 10px;
-    color: rgba(255,255,255,0.4); margin-top: 10%;
-  }
+  .cover-fallback .fb-title { font-family: var(--serif); font-size: clamp(15px,1.3vw,19px); line-height: 1.25; color: rgba(255,255,255,0.85); }
+  .cover-fallback .fb-author { font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.16em; font-size: 10px; color: rgba(255,255,255,0.4); margin-top: 10%; }
   .cover-meta { margin-top: 15px; text-align: center; }
-  .cover-meta .c-title {
-    font-family: var(--serif); font-weight: 500;
-    font-size: clamp(15px, 1.4vw, 20px);
-    color: rgba(255,255,255,0.92); line-height: 1.2;
-  }
-  .cover-meta .c-author {
-    font-family: var(--mono); text-transform: uppercase;
-    letter-spacing: 0.14em; font-size: 12px;
-    color: rgba(255,255,255,0.6); margin-top: 7px;
-  }
+  .cover-meta .c-title { font-family: var(--serif); font-weight: 500; font-size: clamp(15px,1.4vw,20px); color: rgba(255,255,255,0.92); line-height: 1.2; }
+  .cover-meta .c-author { font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.14em; font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 7px; }
   .tag {
-    position: absolute; top: 10px; left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--mono); text-transform: uppercase;
-    font-variant: small-caps; letter-spacing: 0.18em;
-    font-size: 11px; color: #fff;
-    background: rgba(255,255,255,0.09);
-    border: 1px solid rgba(255,255,255,0.16);
+    position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+    font-family: var(--mono); text-transform: uppercase; font-variant: small-caps;
+    letter-spacing: 0.18em; font-size: 11px; color: #fff;
+    background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.16);
     padding: 5px 11px; border-radius: 2px;
     animation: tagPulse 2.4s ease-in-out infinite;
   }
@@ -138,28 +176,85 @@
 <body>
 
   <canvas id="field"></canvas>
+  <div id="three-stage"></div>
   <div id="vignette"></div>
 
   <div id="ui">
     <div id="marker"></div>
     <div id="counter"></div>
+    <div id="cards">
+      <div class="ecard" id="card0"></div>
+      <div class="ecard" id="card1"></div>
+      <div class="ecard" id="card2"></div>
+      <div class="ecard" id="card3"></div>
+    </div>
+    <div id="hiro"></div>
     <div id="book-title"></div>
+    <div class="pagetext" id="leftpage"></div>
+    <div class="pagetext" id="rightpage"></div>
+    <div id="sidepanel"></div>
     <div id="covers"></div>
     <div id="final"></div>
   </div>
 
 <script>
 // ============================================================
-// CONFIG — editable text + scene parameters.
+// CONFIG — all on-screen text + scene parameters.
 // ============================================================
 const CONFIG = {
   text: {
     markers: ["01 / EARLY", "02 / HIROSHIMA", "03 / INDEPENDENT READING", "04 / NOW"],
+    cards: [
+      { head: "MAIRS  /  C+", bullets: [
+        "Missed her actual project. She IS shaping the standard.",
+        "Treated \"I am not a disease\" as a throwaway line. It deserved a paragraph.",
+        "Stopped at \"empowering.\" Never asked why this word." ] },
+      { head: "MLK  /  A-", bullets: [
+        "Mixed up the Emancipation Proclamation with the Declaration of Independence.",
+        "Called civil rights organizers \"directionless.\" They weren't.",
+        "Drifted into present-day commentary. Should have stayed in the moment." ] },
+      { head: "CLINTON  /  C", bullets: [
+        "Flattened a conditional claim into a causal one.",
+        "Skipped the Lewinsky context entirely.",
+        "Saw optimistic tone but missed that it was deflection." ] },
+      { head: "GOLDEN BREAKTHROUGH  /  B+", bullets: [
+        "Sensory detail was landing. Chlorine. Vending machine coils. \"Ginormous.\"",
+        "Voice and register felt honest.",
+        "Mechanics still messy. Doubled periods. Comma splices. Repetition." ] }
+    ],
+    hiro: {
+      header: "this is the story that broke me",
+      bullets: [
+        "Hard language and dense diction",
+        "Required deep, slow analysis",
+        "Couldn't tell what the rhetorical devices were doing",
+        "Non-chronological. Jumped around in time.",
+        "Had to re-read sentences to follow what was happening",
+        "Had to look up words to understand meaning",
+        "Read outside of class to keep up"
+      ],
+      closing: "I was a worse reader than I thought."
+    },
     bookTitle: "Narrative of the Life of Frederick Douglass",
+    leftPage: {
+      header: "HOW I APPROACHED THE BOOK",
+      bullets: [
+        "Read each sentence to understand its purpose",
+        "Went into each chapter like a detective looking for rhetorical devices",
+        "Used context clues. Looked words up. Tied meaning back to the text."
+      ]
+    },
+    rightPage: {
+      header: "WHAT I GAINED",
+      bullets: [ "Reading comprehension", "Rhetorical analysis", "Passion for learning new words" ]
+    },
+    side: {
+      header: "what it did for me",
+      items: [ "Made me slow down", "Made me curious", "Made me a real reader" ]
+    },
     finalPhrase: "AP Lang accelerated my love for reading.",
     counterTotal: "04",
     books: [
-      // Rage of Innocence loads from a local file, bypassing the fetch chain.
       { title: "The Rage of Innocence", author: "Kristin Henning",
         isbn: "9781524748906", src: "covers/rage-of-innocence.jpg" },
       { title: "Why Machines Learn: The Elegant Math Behind Modern AI",
@@ -169,17 +264,17 @@ const CONFIG = {
     ]
   },
   scene: {
-    introMs: 2000,            // pure ambient before the sphere forms
-    morphMs: 1600,            // visual reference for scene-to-scene flow
-    ease: 0.04,               // per-frame approach toward target
-    alphaEase: 0.06,
-    sphere:    { radiusFrac: 0.22, breatheMs: 6000, breatheAmt: 0.10, spin: 0.22, clear: 0.30 },
-    explosion: { maxFrac: 0.62, cycleMs: 6000, ringEveryMs: 5000, ringMs: 2500, clear: 0.13 },
-    book:      { heightFrac: 0.34, openDelayMs: 3000, openMs: 1600,
-                 rowsPerPage: 8, highlightOnMs: 1500, highlightFadeMs: 1000,
-                 wordRatePerSec: 3, wordRisePx: 200, wordLifeMs: 2600, clear: 0.32 },
-    vortex:    { maxFrac: 0.55, squash: 0.62, clear: 0.12,
-                 coverDelayMs: 4000, coverStaggerMs: 600, coverFadeMs: 1200 }
+    introMs: 2000,
+    ease: 0.04, alphaEase: 0.06,
+    cardStaggerMs: 600, cardFadeMs: 900,
+    sphere: { radiusFrac: 0.22, breatheMs: 6000, breatheAmt: 0.10, spin: 0.22, clear: 0.30 },
+    hiro: { panMs: 3000, dolly: 0.05, clear: 0.30 },
+    book: { heightFrac: 0.36, openMs: 1200, closeMs: 1200,
+            rowsPerPage: 8, highlightOnMs: 1500, highlightFadeMs: 1000,
+            wordRatePerSec: 3, wordRisePx: 250, wordLifeMs: 2600,
+            shapeshiftMs: 1500, sideDelayMs: 2000, clear: 0.32 },
+    vortex: { maxFrac: 0.55, squash: 0.62, clear: 0.12,
+              coverDelayMs: 4000, coverStaggerMs: 600, coverFadeMs: 1200 }
   }
 };
 
@@ -189,6 +284,7 @@ const CONFIG = {
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const easeIO = (t) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+const easeOut = (t) => 1 - Math.pow(1 - t, 3);
 const $ = (id) => document.getElementById(id);
 const TAU = Math.PI * 2;
 
@@ -202,15 +298,10 @@ const SC = CONFIG.scene;
 let W = 0, H = 0, cx = 0, cy = 0, dpr = 1;
 let particles = [];
 let mainN = 0, ambN = 0, accN = 0;
-let bookClosed = [], bookOpen = [];   // per-main-particle slot geometry
+let migrators = [];                 // scene 3.E shapeshift particles
 
-// Cheap layered-noise drift used by ambient particles + jitter.
-function noiseX(x, y, t) {
-  return Math.cos(x * 0.0015 + t * 0.21) + Math.sin((x + y) * 0.0010 - t * 0.17);
-}
-function noiseY(x, y, t) {
-  return Math.sin(y * 0.0016 - t * 0.19) + Math.cos((x - y) * 0.0011 + t * 0.15);
-}
+function noiseX(x, y, t) { return Math.cos(x * 0.0015 + t * 0.21) + Math.sin((x + y) * 0.0010 - t * 0.17); }
+function noiseY(x, y, t) { return Math.sin(y * 0.0016 - t * 0.19) + Math.cos((x - y) * 0.0011 + t * 0.15); }
 
 // Build the particle set once, sized to viewport width.
 function buildParticles() {
@@ -219,109 +310,59 @@ function buildParticles() {
   ambN = Math.floor(total * 0.2);
   accN = total - mainN - ambN;
   particles = new Array(total);
-
   for (let i = 0; i < total; i++) {
     const role = i < mainN ? "main" : (i < mainN + ambN ? "ambient" : "accent");
     const p = {
       x: Math.random() * W, y: Math.random() * H,
-      tx: 0, ty: 0, ta: 0,
-      vx: 0, vy: 0,
-      size: 0.6 + Math.random() * 1.5,
-      alpha: 0, role,
-      ph: Math.random() * TAU,           // generic phase
-      sp: 0.5 + Math.random() * 0.8      // generic speed
+      tx: 0, ty: 0, ta: 0, vx: 0, vy: 0,
+      size: 0.6 + Math.random() * 1.5, alpha: 0, role,
+      ph: Math.random() * TAU, sp: 0.5 + Math.random() * 0.8
     };
     if (role === "main") {
       const k = i;
-      // Fibonacci sphere unit vector for Scene 1.
       const phi = Math.acos(1 - 2 * (k + 0.5) / mainN);
       const th = Math.PI * (1 + Math.sqrt(5)) * (k + 0.5);
       p.sx = Math.sin(phi) * Math.cos(th);
       p.sy = Math.cos(phi);
       p.sz = Math.sin(phi) * Math.sin(th);
-      // Explosion ray (Scene 2).
-      p.ea = Math.random() * TAU;
-      p.es = 0.45 + Math.random() * 0.55;
-      p.eo = Math.random();
-      // Vortex state (Scene 4).
-      p.va = Math.random() * TAU;
-      p.vr = 0;
-      p.vseed = Math.random();
+      p.va = Math.random() * TAU; p.vr = 0; p.vseed = Math.random();
+      // Card slot (scene 1.B): which of 4 cards + spread perimeter param.
+      p.cd = { card: k % 4, t: ((k * 0.61803) % 1), inner: (k % 6 === 0) };
+      // Book role (scene 3): spine / perimeter edge / text row.
+      p.bk = bookRole(k);
     }
-    if (role === "accent") p.w = { on: false, age: 0, life: 0, vy: 0, half: 0 };
+    if (role === "accent") p.w = { on: false, age: 0, life: 0, vy: 0 };
     particles[i] = p;
   }
-  buildBookGeometry();
 }
 
-// Closed book = crisp rectangle outline + dense center spine.
-// Open book = two flat page rectangles with 8 text-row guides each.
-// Same particle keeps its category so closed -> open is a clean morph.
-function buildBookGeometry() {
-  bookClosed = new Array(mainN);
-  bookOpen = new Array(mainN);
-
-  const bh = H * SC.book.heightFrac;
-  const bw = bh * 0.8;                       // 4:5, taller than wide
-  const L = cx - bw / 2, R = cx + bw / 2;
-  const Tp = cy - bh / 2, Bp = cy + bh / 2;
-  const pw = bw * 0.96;                      // each open page width
-  const rows = SC.book.rowsPerPage;
-
-  const spineCount = Math.floor(mainN * 0.20);
-  const periCount = Math.floor(mainN * 0.34);
-  // remaining are row particles (text lines): mainN - spineCount - periCount
-
-  for (let i = 0; i < mainN; i++) {
-    let c, o;
-    if (i < spineCount) {
-      // Spine column: stays on the center axis in both states.
-      const f = i / spineCount;
-      const y = lerp(Tp, Bp, f);
-      c = { x: cx, y };
-      o = { x: cx, y };
-    } else if (i < spineCount + periCount) {
-      // Perimeter: closed = single rectangle, open = the two page borders.
-      const f = (i - spineCount) / periCount;       // 0..1 around perimeter
-      c = rectPoint(L, Tp, R, Bp, f);
-      const side = f < 0.5 ? 0 : 1;                  // left page / right page
-      const ff = (f % 0.5) * 2;
-      o = side === 0
-        ? rectPoint(cx - pw, Tp, cx, Bp, ff)
-        : rectPoint(cx, Tp, cx + pw, Bp, ff);
-    } else {
-      // Text rows: hidden inside the spine when closed, spread on open.
-      const r = i - spineCount - periCount;
-      const page = r % 2;                            // 0 left, 1 right
-      const rowI = Math.floor(r / 2) % rows;
-      const along = ((Math.floor(r / 2 / rows)) % 7) / 7 + Math.random() * 0.04;
-      const ry = lerp(Tp + bh * 0.10, Bp - bh * 0.10, rowI / (rows - 1));
-      c = { x: cx, y: lerp(Tp, Bp, Math.random()) }; // collapsed onto spine
-      o = page === 0
-        ? { x: lerp(cx - pw * 0.86, cx - pw * 0.10, along), y: ry, row: rowI, page: 0 }
-        : { x: lerp(cx + pw * 0.10, cx + pw * 0.86, along), y: ry, row: rowI, page: 1 };
-    }
-    bookClosed[i] = c;
-    bookOpen[i] = o;
+// Assign a stable book role so closed -> open is a clean hinge, not a morph.
+function bookRole(k) {
+  const m = k % 100;
+  if (m < 20) return { kind: "spine", v: ((k * 53) % 1000) / 1000 };
+  if (m < 56) {
+    const side = (k % 2 === 0) ? -1 : 1;        // left / right page
+    const e = k % 3;                            // 0 top, 1 bottom, 2 outer edge
+    return { kind: "peri", side, edge: e, t: ((k * 29) % 1000) / 1000 };
   }
+  const side = (k % 2 === 0) ? -1 : 1;
+  const rows = SC.book.rowsPerPage;
+  return { kind: "row", side, row: (Math.floor(k / 7) % rows),
+           along: ((k * 17) % 1000) / 1000 };
 }
-// Point at fraction f (0..1) around a rectangle perimeter.
+
 function rectPoint(x0, y0, x1, y1, f) {
-  const w = x1 - x0, h = y1 - y0;
-  const per = 2 * (w + h);
+  const w = x1 - x0, h = y1 - y0, per = 2 * (w + h);
   let d = f * per;
   if (d < w) return { x: x0 + d, y: y0 };
-  d -= w;
-  if (d < h) return { x: x1, y: y0 + d };
-  d -= h;
-  if (d < w) return { x: x1 - d, y: y1 };
-  d -= w;
-  return { x: x0, y: y1 - d };
+  d -= w; if (d < h) return { x: x1, y: y0 + d };
+  d -= h; if (d < w) return { x: x1 - d, y: y1 };
+  d -= w; return { x: x0, y: y1 - d };
 }
 
-// ---- Scene target functions (set p.tx, p.ty, p.ta) ----
+// ---- Scene target functions ----
 
-// Scene 1: breathing, slowly spinning sphere.
+// Scene 1.A: breathing, slowly spinning sphere.
 function targetsForSphere(p, st) {
   const s = SC.sphere;
   const baseR = Math.min(W, H) * s.radiusFrac;
@@ -331,61 +372,88 @@ function targetsForSphere(p, st) {
   const x = p.sx * ca + p.sz * sa;
   const z = -p.sx * sa + p.sz * ca;
   const R = baseR * breathe;
-  const jitter = 6 * Math.sin(st * 0.002 * p.sp + p.ph);
-  p.tx = cx + x * R + jitter;
-  p.ty = cy + p.sy * R + jitter * 0.7;
-  p.ta = 0.22 + 0.55 * ((z + 1) / 2);          // front particles brighter
+  const j = 6 * Math.sin(st * 0.002 * p.sp + p.ph);
+  p.tx = cx + x * R + j;
+  p.ty = cy + p.sy * R + j * 0.7;
+  p.ta = 0.22 + 0.55 * ((z + 1) / 2);
 }
 
-// Scene 2: continuous outward explosion, desynced per particle.
-function targetsForExplosion(p, st) {
-  const e = SC.explosion;
-  const maxR = Math.max(W, H) * e.maxFrac;
-  const ph = ((st / e.cycleMs) * p.es + p.eo) % 1;
-  const r = ph * maxR;
-  p.tx = cx + Math.cos(p.ea) * r;
-  p.ty = cy + Math.sin(p.ea) * r;
-  p.ta = Math.sin(ph * Math.PI) * 0.7;          // faint origin -> fade at edge
+// Scene 1.B: four corner cards, particle-outlined.
+function cardRects() {
+  const mx = W * 0.05, my = H * 0.07;
+  const cw = Math.min(W * 0.38, 560), ch = Math.min(H * 0.34, 320);
+  return [
+    { x0: mx, y0: my, x1: mx + cw, y1: my + ch },
+    { x0: W - mx - cw, y0: my, x1: W - mx, y1: my + ch },
+    { x0: mx, y0: H - my - ch, x1: mx + cw, y1: H - my },
+    { x0: W - mx - cw, y0: H - my - ch, x1: W - mx, y1: H - my }
+  ];
 }
-
-// Scene 3: book (closed -> open), with row-highlight cycle.
-let highlightIdx = 0;
-function targetsForBook(p, i, st) {
-  const b = SC.book;
-  let openAmt = 0;
-  if (st > b.openDelayMs) openAmt = easeIO(clamp((st - b.openDelayMs) / b.openMs, 0, 1));
-  const c = bookClosed[i], o = bookOpen[i];
-  p.tx = lerp(c.x, o.x, openAmt);
-  p.ty = lerp(c.y, o.y, openAmt);
-
-  // Base alpha: crisp outline + spine, dim text rows.
-  let a = (o.row === undefined) ? 0.85 : 0.16;
-  if (o.row !== undefined && openAmt > 0.6) {
-    // One row across both pages brightens at a time, then the next.
-    const total = b.rowsPerPage * 2;
-    const idx = (o.page === 0 ? o.row : b.rowsPerPage + o.row);
-    if (idx === highlightIdx % total) a = 0.95;
+function targetsForCards(p) {
+  const r = cardRects()[p.cd.card];
+  if (p.cd.inner) {
+    p.tx = lerp(r.x0, r.x1, 0.10 + (p.ph / TAU) * 0.80);
+    p.ty = lerp(r.y0, r.y1, 0.10 + ((p.sp - 0.5) / 0.8) * 0.80);
+    p.ta = 0.10;
+  } else {
+    const q = rectPoint(r.x0, r.y0, r.x1, r.y1, p.cd.t);
+    p.tx = q.x; p.ty = q.y; p.ta = 0.7;
   }
-  p.ta = a * (openAmt > 0.5 ? 1 : 0.7 + 0.3 * openAmt);
 }
 
-// Scene 4: wide rotating vortex, particles spiral inward and reseed.
-function targetsForVortex(p, st, dt) {
+// Scene 3: hinge book. openAmt 0 = closed rectangle, 1 = two flat pages.
+let bookOpenAmt = 0;
+let highlightIdx = 0;
+let leftLines = 1, rightLines = 1;       // ambient text-line visibility per page
+function bookMetrics() {
+  const bh = H * SC.book.heightFrac, bw = bh * 0.8;
+  return { bh, bw, Tp: cy - bh / 2, Bp: cy + bh / 2, pw: bw, gap: 6, arc: bw * 0.10 };
+}
+function targetsForBook(p) {
+  const e = bookOpenAmt;
+  const M = bookMetrics();
+  const bk = p.bk;
+  if (bk.kind === "spine") {
+    p.tx = cx; p.ty = lerp(M.Tp, M.Bp, bk.v);
+    p.ta = 0.92;
+    return;
+  }
+  const side = bk.side;
+  const innerX = cx + side * lerp(0, M.gap, e);
+  const outerX = cx + side * (lerp(M.bw / 2, M.pw, e) + Math.sin(Math.PI * e) * M.arc);
+  if (bk.kind === "peri") {
+    if (bk.edge === 0) { p.tx = lerp(innerX, outerX, bk.t); p.ty = M.Tp; }
+    else if (bk.edge === 1) { p.tx = lerp(innerX, outerX, bk.t); p.ty = M.Bp; }
+    else { p.tx = outerX; p.ty = lerp(M.Tp, M.Bp, bk.t); }
+    p.ta = 0.85;
+  } else {
+    const x = lerp(innerX + side * M.bw * 0.05, outerX - side * M.bw * 0.05, bk.along);
+    const y = lerp(M.Tp + M.bh * 0.12, M.Bp - M.bh * 0.12, bk.row / (SC.book.rowsPerPage - 1));
+    p.tx = x; p.ty = y;
+    const vis = side < 0 ? leftLines : rightLines;
+    let a = 0.16 * vis;
+    const total = SC.book.rowsPerPage * 2;
+    const idx = (side < 0 ? bk.row : SC.book.rowsPerPage + bk.row);
+    if (vis > 0.5 && e > 0.9 && idx === (highlightIdx % total)) a = 0.9;
+    p.ta = a * (e > 0.5 ? 1 : 0);
+  }
+}
+
+// Scene 4: rotating vortex, particles spiral inward and reseed.
+function targetsForVortex(p, dt) {
   const v = SC.vortex;
   const maxR = Math.max(W, H) * v.maxFrac;
   if (p.vr <= 0) { p.vr = maxR * (0.55 + 0.45 * p.vseed); p.va = Math.random() * TAU; }
-  const spd = 0.5 + 0.8 * (1 - p.vr / maxR);     // inner particles rotate faster
+  const spd = 0.5 + 0.8 * (1 - p.vr / maxR);
   p.va += dt * 0.0009 * spd;
-  p.vr -= dt * 0.012 * (0.5 + p.vseed);          // slow inward drift
+  p.vr -= dt * 0.012 * (0.5 + p.vseed);
   p.tx = cx + Math.cos(p.va) * p.vr;
   p.ty = cy + Math.sin(p.va) * p.vr * v.squash;
-  const f = p.vr / maxR;
-  p.ta = Math.sin(clamp(f, 0, 1) * Math.PI) * 0.7;
-  if (p.vr < maxR * 0.05) p.vr = 0;              // reseed at the edge
+  p.ta = Math.sin(clamp(p.vr / maxR, 0, 1) * Math.PI) * 0.7;
+  if (p.vr < maxR * 0.05) p.vr = 0;
 }
 
-// Ambient particles: always alive on the noise field.
-function ambientDrift(p, simS, dt) {
+function ambientDrift(p, simS) {
   p.vx += noiseX(p.x, p.y, simS) * 0.010;
   p.vy += noiseY(p.x, p.y, simS) * 0.010;
   p.vx *= 0.95; p.vy *= 0.95;
@@ -395,26 +463,25 @@ function ambientDrift(p, simS, dt) {
   p.ta = 0.10 + 0.16 * (0.5 + 0.5 * Math.sin(simS * p.sp + p.ph));
 }
 
-// Scene 3 word-stream: clusters of accent particles rising off the pages.
+// Scene 3 continuous word-stream (3 clusters/sec).
 let wordAcc = 0;
 function spawnWordCluster() {
-  const b = SC.book;
-  const bh = H * b.heightFrac, bw = bh * 0.8;
-  const half = Math.random() < 0.5 ? -1 : 1;
-  const baseX = cx + half * (bw * 0.12 + Math.random() * bw * 0.78);
-  const baseY = cy + (Math.random() - 0.3) * bh * 0.4;
-  const width = 30 + Math.random() * 50;
-  const life = b.wordLifeMs * (0.8 + Math.random() * 0.5);
-  let placed = 0, need = 8 + Math.floor(Math.random() * 6);
-  for (let i = mainN + ambN; i < particles.length && placed < need; i++) {
+  const M = bookMetrics();
+  const side = Math.random() < 0.5 ? -1 : 1;
+  const pageW = M.pw;
+  const bx = cx + side * (M.gap + Math.random() * pageW * 0.92);
+  const by = cy + (Math.random() - 0.3) * M.bh * 0.4;
+  const width = 40 + Math.random() * 40;
+  const life = SC.book.wordLifeMs * (0.85 + Math.random() * 0.4);
+  let need = 9 + Math.floor(Math.random() * 5);
+  for (let i = mainN + ambN; i < particles.length && need > 0; i++) {
     const p = particles[i];
     if (p.w.on) continue;
     p.w.on = true; p.w.age = 0; p.w.life = life;
-    p.w.vy = (b.wordRisePx / life);
-    p.x = baseX + (Math.random() - 0.5) * width;
-    p.y = baseY + (Math.random() - 0.5) * 7;
-    p.alpha = 0;
-    placed++;
+    p.w.vy = SC.book.wordRisePx / life;
+    p.x = bx + (Math.random() - 0.5) * width;
+    p.y = by + (Math.random() - 0.5) * 6;
+    p.alpha = 0; need--;
   }
 }
 function updateWordParticle(p, dt) {
@@ -430,74 +497,272 @@ function updateWordParticle(p, dt) {
 }
 
 // ============================================================
-// Scene controller
+// Three.js — scene 2 Hiroshima aftermath
 // ============================================================
-let scene = 0;              // 0..3
-let phase = "intro";        // "intro" | "scene"
-let simT = 0;               // virtual ms, frozen while paused
-let sceneT0 = 0;            // simT when current scene started
+let three = null;     // { renderer, scene, camera, cloud, embers, ruins, basePitch }
+function mountThree() {
+  if (three || typeof THREE === "undefined") return;
+  const host = $("three-stage");
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setSize(W, H);
+  host.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x05050a);
+  scene.fog = new THREE.FogExp2(0x0b0b12, 0.011);
+
+  const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 900);
+  camera.position.set(0, 7, 52);
+  const basePitch = -0.10;
+  camera.rotation.x = basePitch;
+
+  // Ash haze gradient backdrop.
+  const gc = document.createElement("canvas");
+  gc.width = 4; gc.height = 256;
+  const g2 = gc.getContext("2d");
+  const grad = g2.createLinearGradient(0, 0, 0, 256);
+  grad.addColorStop(0, "#0a0a12");
+  grad.addColorStop(0.62, "#15151c");
+  grad.addColorStop(1, "#070709");
+  g2.fillStyle = grad; g2.fillRect(0, 0, 4, 256);
+  const bgTex = new THREE.CanvasTexture(gc);
+  const sky = new THREE.Mesh(
+    new THREE.PlaneGeometry(1400, 700),
+    new THREE.MeshBasicMaterial({ map: bgTex, depthWrite: false, fog: false }));
+  sky.position.set(0, 120, -420);
+  scene.add(sky);
+
+  // Scorched ground.
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(1600, 1600),
+    new THREE.MeshBasicMaterial({ color: 0x0c0c11 }));
+  ground.rotation.x = -Math.PI / 2;
+  scene.add(ground);
+
+  // Mid-distance flattened ruins (impressionistic broken skeletons).
+  const ruins = new THREE.Group();
+  const rmat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.13 });
+  for (let i = 0; i < 90; i++) {
+    const w = 1.4 + Math.random() * 5;
+    const h = 1.2 + Math.random() * 7;
+    const d = 1.4 + Math.random() * 5;
+    const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), rmat);
+    const lane = (Math.random() < 0.5 ? -1 : 1);
+    b.position.set(lane * (6 + Math.random() * 70), h / 2,
+                   -20 - Math.random() * 230);
+    b.rotation.y = Math.random() * 0.5;
+    ruins.add(b);
+  }
+  scene.add(ruins);
+
+  // Far mushroom cloud (suspended white particles, slowly expanding).
+  const N = 1700;
+  const cpos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    let rx, ry, rz;
+    if (i < N * 0.45) {                       // stem
+      const a = Math.random() * TAU, rr = Math.random() * 7;
+      rx = Math.cos(a) * rr; rz = Math.sin(a) * rr;
+      ry = 4 + Math.random() * 46;
+    } else {                                  // cap
+      const a = Math.random() * TAU;
+      const rr = 14 + Math.random() * 30;
+      rx = Math.cos(a) * rr; rz = Math.sin(a) * rr * 0.8;
+      ry = 50 + Math.random() * 34 - (rr * 0.3);
+    }
+    cpos[i * 3] = rx; cpos[i * 3 + 1] = ry; cpos[i * 3 + 2] = rz;
+  }
+  const cgeo = new THREE.BufferGeometry();
+  cgeo.setAttribute("position", new THREE.BufferAttribute(cpos, 3));
+  const cloud = new THREE.Points(cgeo, new THREE.PointsMaterial({
+    color: 0xffffff, size: 1.5, transparent: true, opacity: 0.38,
+    sizeAttenuation: true, depthWrite: false }));
+  cloud.position.set(0, 8, -300);
+  scene.add(cloud);
+
+  // Slow-rising embers.
+  const EN = 240;
+  const epos = new Float32Array(EN * 3);
+  const espd = new Float32Array(EN);
+  for (let i = 0; i < EN; i++) {
+    epos[i * 3] = (Math.random() - 0.5) * 200;
+    epos[i * 3 + 1] = Math.random() * 40;
+    epos[i * 3 + 2] = -10 - Math.random() * 240;
+    espd[i] = 0.4 + Math.random() * 1.2;
+  }
+  const egeo = new THREE.BufferGeometry();
+  egeo.setAttribute("position", new THREE.BufferAttribute(epos, 3));
+  const embers = new THREE.Points(egeo, new THREE.PointsMaterial({
+    color: 0xffffff, size: 0.7, transparent: true, opacity: 0.5,
+    sizeAttenuation: true, depthWrite: false }));
+  scene.add(embers);
+
+  three = { renderer, scene, camera, cloud, embers, espd, basePitch };
+}
+function renderThree(dt, sub, st) {
+  if (!three) return;
+  const t = three;
+  // Ambient slow forward dolly.
+  t.camera.position.z -= SC.hiro.dolly * (dt / 1000);
+  // Embers drift up and recycle.
+  const pa = t.embers.geometry.attributes.position;
+  for (let i = 0; i < t.espd.length; i++) {
+    pa.array[i * 3 + 1] += t.espd[i] * (dt / 1000) * 3;
+    if (pa.array[i * 3 + 1] > 60) pa.array[i * 3 + 1] = 0;
+  }
+  pa.needsUpdate = true;
+  t.cloud.scale.setScalar(1 + Math.min(st, 60000) * 0.0000025 + 1e-6);
+  // Scene 2.B pan-down.
+  if (sub >= 1) {
+    const k = easeIO(clamp(st / SC.hiro.panMs, 0, 1));
+    t.camera.rotation.x = lerp(t.basePitch, -1.08, k);
+  } else {
+    t.camera.rotation.x = t.basePitch;
+  }
+  t.renderer.render(t.scene, t.camera);
+}
+function disposeThree() {
+  if (!three || scene === 1) return;   // skip if we navigated back to scene 2
+  const host = $("three-stage");
+  three.scene.traverse((o) => {
+    if (o.geometry) o.geometry.dispose();
+    if (o.material) {
+      if (o.material.map) o.material.map.dispose();
+      o.material.dispose();
+    }
+  });
+  three.renderer.dispose();
+  if (three.renderer.domElement.parentNode === host) host.removeChild(three.renderer.domElement);
+  three = null;
+}
+
+// ============================================================
+// Scene + sub-state controller
+// ============================================================
+let scene = 0;            // 0 EARLY, 1 HIROSHIMA, 2 INDEPENDENT, 3 NOW
+let sub = 0;
+let phase = "intro";
+let simT = 0, sceneT0 = 0, subT0 = 0;
 let paused = false;
-let coverStart = -1;        // simT when covers were triggered
-let forcedCovers = false;
-let shockRings = [];
-let lastTS = null;
-let fpsAcc = 0, fpsFrames = 0;
+let closing = false, closeT0 = 0;
+let coverStart = -1;
+let lastTS = null, fpsAcc = 0, fpsFrames = 0;
 
-const elMarker = $("marker");
-const elCounter = $("counter");
-const elTitle = $("book-title");
-const elFinal = $("final");
-const elCovers = $("covers");
+const subCount = [2, 2, 4, 1];   // subs per scene
 
-function setScene(i) {
+const elMarker = $("marker"), elCounter = $("counter"), elTitle = $("book-title");
+const elFinal = $("final"), elCovers = $("covers"), elHiro = $("hiro");
+const elLeft = $("leftpage"), elRight = $("rightpage"), elSide = $("sidepanel");
+
+function setSub(s) { sub = s; subT0 = simT; updateUI(); }
+function gotoScene(i, s) {
+  const wasThree = (scene === 1);
   scene = clamp(i, 0, 3);
-  phase = "scene";
-  sceneT0 = simT;
-  coverStart = -1;
-  forcedCovers = false;
-  shockRings = [];
-  highlightIdx = 0;
-  // Clear any in-flight word particles when leaving Scene 3.
+  sub = s || 0;
+  sceneT0 = simT; subT0 = simT;
+  closing = false; coverStart = -1; migrators = [];
   for (let k = mainN + ambN; k < particles.length; k++) particles[k].w.on = false;
+  applyThree(wasThree);
   updateUI();
 }
-function nextScene() {
-  if (phase === "intro") { phase = "scene"; scene = 0; sceneT0 = simT; updateUI(); return; }
-  if (scene === 3) {
-    // Last scene: first advance reveals covers, then it just holds.
-    if (coverStart < 0) { coverStart = simT; forcedCovers = true; updateUI(); }
+// Mount/dispose Three only for scene 2 (index 1).
+function applyThree(wasThree) {
+  if (scene === 1) { mountThree(); $("three-stage").style.opacity = 1; canvas.style.opacity = 0; }
+  else {
+    $("three-stage").style.opacity = 0; canvas.style.opacity = 1;
+    if (wasThree) setTimeout(disposeThree, 750);
+  }
+}
+
+function advance() {
+  if (phase === "intro") { phase = "scene"; scene = 0; sub = 0; sceneT0 = subT0 = simT; updateUI(); return; }
+  if (scene === 0) { sub === 0 ? setSub(1) : gotoScene(1, 0); return; }
+  if (scene === 1) { sub === 0 ? setSub(1) : gotoScene(2, 0); return; }
+  if (scene === 2) {
+    if (sub < 3) { setSub(sub + 1); return; }
+    if (!closing) { closing = true; closeT0 = simT; }   // close then scene 4
     return;
   }
-  setScene(scene + 1);
+  if (scene === 3) { if (coverStart < 0) { coverStart = simT; updateUI(); } }
 }
-function prevScene() {
+function back() {
   if (phase === "intro") return;
-  if (scene === 3 && coverStart >= 0) { coverStart = -1; forcedCovers = false; updateUI(); return; }
-  if (scene === 0) return;
-  setScene(scene - 1);
+  if (scene === 0) { if (sub > 0) setSub(0); return; }
+  if (scene === 1) { sub > 0 ? setSub(0) : gotoScene(0, 1); return; }
+  if (scene === 2) { sub > 0 ? setSub(sub - 1) : gotoScene(1, 0); closing = false; return; }
+  if (scene === 3) {
+    if (coverStart >= 0) { coverStart = -1; updateUI(); }
+    else gotoScene(2, 3);
+  }
 }
 function restart() {
-  simT = 0; sceneT0 = 0; scene = 0; phase = "scene";
-  coverStart = -1; forcedCovers = false; shockRings = []; highlightIdx = 0;
+  simT = sceneT0 = subT0 = 0; scene = 0; sub = 0; phase = "scene";
+  closing = false; coverStart = -1; migrators = [];
   for (let k = mainN + ambN; k < particles.length; k++) particles[k].w.on = false;
+  applyThree(true);
   updateUI();
 }
 
-// Show/hide the DOM overlay for the active scene.
+// Position scene-3 page text over the open book each layout.
+function layoutPageText() {
+  const M = bookMetrics();
+  const pageCX = M.pw * 0.55;
+  elLeft.style.width = M.pw * 0.8 + "px";
+  elLeft.style.left = (cx - pageCX) + "px";
+  elLeft.style.top = (cy - M.bh * 0.34) + "px";
+  elLeft.style.transform = "translateX(-50%)";
+  elRight.style.width = M.pw * 0.8 + "px";
+  elRight.style.left = (cx + pageCX) + "px";
+  elRight.style.top = (cy - M.bh * 0.34) + "px";
+  elRight.style.transform = "translateX(-50%)";
+  elSide.style.left = (cx + M.pw + 70) + "px";
+  elSide.style.top = (cy - M.bh * 0.18) + "px";
+}
+
+// Build DOM text from CONFIG.
+function buildText() {
+  CONFIG.text.cards.forEach((c, i) => {
+    $("card" + i).innerHTML = '<div class="eh">' + c.head + '</div><ul>' +
+      c.bullets.map((b) => "<li>" + b + "</li>").join("") + "</ul>";
+  });
+  const h = CONFIG.text.hiro;
+  elHiro.innerHTML = '<div class="hh">' + h.header + '</div><ul>' +
+    h.bullets.map((b) => "<li>" + b + "</li>").join("") +
+    '</ul><div class="hc">' + h.closing + "</div>";
+  const lp = CONFIG.text.leftPage, rp = CONFIG.text.rightPage, sd = CONFIG.text.side;
+  elLeft.innerHTML = '<div class="ph">' + lp.header + '</div><ul>' +
+    lp.bullets.map((b) => "<li>" + b + "</li>").join("") + "</ul>";
+  elRight.innerHTML = '<div class="ph">' + rp.header + '</div><ul>' +
+    rp.bullets.map((b) => "<li>" + b + "</li>").join("") + "</ul>";
+  elSide.innerHTML = '<div class="sh">' + sd.header + '</div><ul>' +
+    sd.items.map((b) => "<li>" + b + "</li>").join("") + "</ul>";
+  elTitle.textContent = CONFIG.text.bookTitle;
+  elFinal.textContent = CONFIG.text.finalPhrase;
+}
+
+// Show the right overlay for the active scene/sub.
 function updateUI() {
-  const showScene = phase === "scene";
-  elMarker.textContent = showScene ? CONFIG.text.markers[scene] : "";
-  elMarker.style.opacity = showScene ? 1 : 0;
-  elCounter.textContent = showScene
+  const onScene = phase === "scene";
+  const showMarker = onScene && !(scene === 0 && sub === 1);
+  elMarker.textContent = onScene ? CONFIG.text.markers[scene] : "";
+  elMarker.style.opacity = showMarker ? 1 : 0;
+  elCounter.textContent = onScene
     ? String(scene + 1).padStart(2, "0") + " / " + CONFIG.text.counterTotal : "";
-  elCounter.style.opacity = showScene ? 1 : 0;
-  elTitle.style.opacity = (showScene && scene === 2) ? 1 : 0;
-  if (showScene && scene === 2) elTitle.textContent = CONFIG.text.bookTitle;
-  elCovers.style.opacity = (showScene && scene === 3 && coverStart >= 0) ? 1 : 0;
-  if (!(showScene && scene === 3 && coverStart >= 0)) {
+  elCounter.style.opacity = onScene ? 1 : 0;
+
+  for (let i = 0; i < 4; i++) $("card" + i).style.opacity = 0;
+  elHiro.style.opacity = 0;
+  elTitle.style.opacity = (onScene && scene === 2) ? 1 : 0;
+  if (!(onScene && scene === 2 && sub >= 2)) elLeft.style.opacity = 0;
+  if (!(onScene && scene === 2 && sub >= 3)) elRight.style.opacity = 0;
+  if (!(onScene && scene === 2 && sub === 3)) elSide.style.opacity = 0;
+  elCovers.style.opacity = (onScene && scene === 3 && coverStart >= 0) ? 1 : 0;
+  if (!(onScene && scene === 3 && coverStart >= 0)) {
     elFinal.style.opacity = 0;
     coverCards.forEach((c) => (c.style.opacity = 0));
   }
+  if (onScene && scene === 2) layoutPageText();
 }
 
 // ============================================================
@@ -505,74 +770,89 @@ function updateUI() {
 // ============================================================
 function frame(ts) {
   if (lastTS === null) lastTS = ts;
-  let dt = ts - lastTS;
-  lastTS = ts;
+  let dt = ts - lastTS; lastTS = ts;
   dt = Math.min(dt, 50);
-
   if (!paused) simT += dt;
-  const st = simT - sceneT0;
+  const st = simT - subT0;
   const simS = simT / 1000;
 
-  // Opening: ambient field drifts in, then forms Scene 1 (one-time, not an
-  // inter-scene auto-advance — scenes 1->4 only move on presenter input).
-  if (phase === "intro" && !paused && simT > CONFIG.scene.introMs) {
-    phase = "scene"; scene = 0; sceneT0 = simT;
-    updateUI();
+  if (phase === "intro" && !paused && simT > SC.introMs) {
+    phase = "scene"; scene = 0; sub = 0; sceneT0 = subT0 = simT; updateUI();
   }
 
-  // Active scene clear-alpha controls the motion-blur trail.
-  let clearA = 0.20;
-  if (phase === "scene") {
-    clearA = [SC.sphere.clear, SC.explosion.clear, SC.book.clear, SC.vortex.clear][scene];
+  // Scene 2 runs on Three.js only.
+  if (phase === "scene" && scene === 1) {
+    ctx.clearRect(0, 0, W, H);
+    if (!paused) renderThree(dt, sub, st);
+    else if (three) three.renderer.render(three.scene, three.camera);
+    if (sub === 1) {
+      const done = st > SC.hiro.panMs;
+      elHiro.style.opacity = done ? 1 : 0;
+    }
+    requestAnimationFrame(frame);
+    perfCheck(dt);
+    return;
   }
+
+  // Canvas clear-alpha (motion-blur trail) per scene.
+  let clearA = 0.20;
+  if (phase === "scene") clearA = [SC.sphere.clear, 0.3, SC.book.clear, SC.vortex.clear][scene];
   ctx.fillStyle = "rgba(0,0,0," + clearA + ")";
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = "#fff";
 
-  // Scene 3 continuous word-stream spawning.
-  if (!paused && phase === "scene" && scene === 2) {
-    const b = SC.book;
-    if (st > b.openDelayMs + b.openMs) {
-      wordAcc += dt;
-      const interval = 1000 / b.wordRatePerSec;
-      while (wordAcc >= interval) { spawnWordCluster(); wordAcc -= interval; }
-    }
-  }
-
-  // Scene 3 row-highlight cycle.
+  // Scene 3 timing: open / close hinge, highlight, page-line visibility.
   if (phase === "scene" && scene === 2) {
+    if (closing) {
+      const k = easeIO(clamp((simT - closeT0) / SC.book.closeMs, 0, 1));
+      bookOpenAmt = 1 - k;
+      if (k >= 1) { gotoScene(3, 0); }
+    } else if (sub === 0) {
+      bookOpenAmt += (0 - bookOpenAmt) * 0.12;
+    } else {
+      const k = easeOut(clamp((simT - (scene === 2 && sub === 1 ? subT0 : sceneT0)) / SC.book.openMs, 0, 1));
+      bookOpenAmt = sub === 1 ? k : 1;
+    }
     const b = SC.book;
-    const slot = b.highlightOnMs + b.highlightFadeMs;
-    highlightIdx = Math.floor(Math.max(0, st - b.openDelayMs - b.openMs) / slot);
+    if (bookOpenAmt > 0.9) {
+      const slot = b.highlightOnMs + b.highlightFadeMs;
+      highlightIdx = Math.floor((simT - sceneT0) / slot);
+    }
+    // Left/right ambient line visibility by sub-state.
+    const tgtL = (sub === 2) ? 0 : 1;
+    const tgtR = (sub >= 3) ? 0 : 1;
+    leftLines += (tgtL - leftLines) * 0.08;
+    rightLines += (tgtR - rightLines) * 0.08;
+    // Continuous word stream while the book is open.
+    if (!paused && bookOpenAmt > 0.9) {
+      wordAcc += dt;
+      const iv = 1000 / b.wordRatePerSec;
+      while (wordAcc >= iv) { spawnWordCluster(); wordAcc -= iv; }
+    }
+    // 3.E shapeshift: spawn migrators once when entering sub 3.
+    if (sub === 3 && !closing && migrators.length === 0 && st < 80) spawnMigrators();
   }
 
-  // Update + draw every particle.
+  // Update + draw particles.
   for (let i = 0; i < particles.length; i++) {
     const p = particles[i];
-
     if (p.role === "ambient") {
-      if (!paused) ambientDrift(p, simS, dt);
+      if (!paused) ambientDrift(p, simS);
     } else if (p.role === "accent") {
-      if (phase === "scene" && scene === 2) {
+      if (phase === "scene" && scene === 2 && bookOpenAmt > 0.9) {
         if (!paused) updateWordParticle(p, dt);
-      } else {
-        p.w.on = false;
-        if (!paused) ambientDrift(p, simS, dt);
-      }
-    } else {
-      // main particle: follow the active scene's target
-      if (phase === "intro") {
-        if (!paused) ambientDrift(p, simS, dt);
-      } else if (!paused) {
-        if (scene === 0) targetsForSphere(p, st);
-        else if (scene === 1) targetsForExplosion(p, st);
-        else if (scene === 2) targetsForBook(p, i, st);
-        else targetsForVortex(p, st, dt);
+      } else { p.w.on = false; if (!paused) ambientDrift(p, simS); }
+    } else if (!paused) {
+      if (phase === "intro") ambientDrift(p, simS);
+      else {
+        if (scene === 0) { sub === 0 ? targetsForSphere(p, simT - sceneT0) : targetsForCards(p); }
+        else if (scene === 2) targetsForBook(p);
+        else if (scene === 3) targetsForVortex(p, dt);
+        else ambientDrift(p, simS);
         p.x += (p.tx - p.x) * SC.ease;
         p.y += (p.ty - p.y) * SC.ease;
       }
     }
-
     if (!paused) p.alpha += (p.ta - p.alpha) * SC.alphaEase;
     if (p.alpha > 0.003) {
       ctx.globalAlpha = clamp(p.alpha, 0, 1);
@@ -581,60 +861,86 @@ function frame(ts) {
   }
   ctx.globalAlpha = 1;
 
-  // Scene 2 expanding shock-ring pulse.
-  if (phase === "scene" && scene === 1) {
-    const e = SC.explosion;
-    if (!paused && (shockRings.length === 0 ||
-        st - shockRings[shockRings.length - 1].born > e.ringEveryMs)) {
-      shockRings.push({ born: st });
-    }
-    const maxR = Math.max(W, H) * e.maxFrac;
-    for (let r = shockRings.length - 1; r >= 0; r--) {
-      const age = st - shockRings[r].born;
-      if (age > e.ringMs) { shockRings.splice(r, 1); continue; }
-      const pr = age / e.ringMs;
-      ctx.globalAlpha = (1 - pr) * 0.16;
-      ctx.strokeStyle = "#fff";
-      ctx.lineWidth = 1.4;
-      ctx.beginPath();
-      ctx.arc(cx, cy, pr * maxR, 0, TAU);
-      ctx.stroke();
+  // Scene 3.E shapeshift particles flying across the spine.
+  if (migrators.length) {
+    for (let i = migrators.length - 1; i >= 0; i--) {
+      const m = migrators[i];
+      if (!paused) m.age += dt;
+      const k = clamp(m.age / m.life, 0, 1);
+      const e = easeIO(k);
+      const mx = lerp(m.x0, m.x1, e);
+      const my = lerp(m.y0, m.y1, e) - Math.sin(Math.PI * k) * m.arc;
+      ctx.globalAlpha = Math.sin(Math.PI * k) * 0.7;
+      ctx.fillRect(mx, my, 1.6, 1.6);
+      if (k >= 1) migrators.splice(i, 1);
     }
     ctx.globalAlpha = 1;
   }
 
-  // Scene 4 cover reveal (timed after vortex stabilizes, or forced).
+  // Scene 1.B card stagger.
+  if (phase === "scene" && scene === 0 && sub === 1) {
+    for (let i = 0; i < 4; i++) {
+      $("card" + i).style.opacity =
+        clamp((st - i * SC.cardStaggerMs) / SC.cardFadeMs, 0, 1);
+    }
+  }
+
+  // Scene 3 page reveals + side panel timing.
+  if (phase === "scene" && scene === 2 && !closing) {
+    elLeft.style.opacity = (sub === 2) ? 1 : 0;
+    if (sub >= 3) {
+      const ss = SC.book.shapeshiftMs;
+      elRight.style.opacity = clamp((st - ss * 0.55) / 900, 0, 1);
+      elSide.style.opacity = clamp((st - (ss + SC.book.sideDelayMs)) / 1100, 0, 1);
+    }
+  }
+
+  // Scene 4 cover reveal (timed, or forced by advance).
   if (phase === "scene" && scene === 3) {
-    if (coverStart < 0 && !paused && st > SC.vortex.coverDelayMs) coverStart = simT;
+    if (coverStart < 0 && !paused && (simT - sceneT0) > SC.vortex.coverDelayMs) {
+      coverStart = simT; updateUI();
+    }
     if (coverStart >= 0) {
       elCovers.style.opacity = 1;
-      const ct = simT - coverStart;
+      const cT = simT - coverStart;
       coverCards.forEach((card, idx) => {
-        const s = idx * SC.vortex.coverStaggerMs;
-        card.style.opacity = clamp((ct - s) / SC.vortex.coverFadeMs, 0, 1);
+        card.style.opacity = clamp((cT - idx * SC.vortex.coverStaggerMs) / SC.vortex.coverFadeMs, 0, 1);
       });
-      const settled = (coverCards.length - 1) * SC.vortex.coverStaggerMs
-        + SC.vortex.coverFadeMs + 500;
-      elFinal.textContent = CONFIG.text.finalPhrase;
-      elFinal.style.opacity = ct > settled ? 1 : 0;
+      const settled = (coverCards.length - 1) * SC.vortex.coverStaggerMs + SC.vortex.coverFadeMs + 500;
+      elFinal.style.opacity = cT > settled ? 1 : 0;
     }
   }
 
-  // Adaptive performance: thin particles if the frame rate drops.
-  fpsAcc += dt; fpsFrames++;
-  if (fpsAcc >= 1000) {
-    const fps = fpsFrames / (fpsAcc / 1000);
-    if (fps < 55 && particles.length > 900) {
-      particles.length = Math.floor(particles.length * 0.9);
-    }
-    fpsAcc = 0; fpsFrames = 0;
-  }
-
+  perfCheck(dt);
   requestAnimationFrame(frame);
 }
 
+function spawnMigrators() {
+  const M = bookMetrics();
+  const lx = cx - M.pw * 0.5, rx = cx + M.pw * 0.5;
+  for (let i = 0; i < 150; i++) {
+    migrators.push({
+      x0: lx + (Math.random() - 0.5) * M.pw * 0.6,
+      y0: cy + (Math.random() - 0.5) * M.bh * 0.5,
+      x1: rx + (Math.random() - 0.5) * M.pw * 0.6,
+      y1: cy + (Math.random() - 0.5) * M.bh * 0.5,
+      arc: 30 + Math.random() * 60,
+      age: -Math.random() * 250, life: SC.book.shapeshiftMs * (0.7 + Math.random() * 0.4)
+    });
+  }
+}
+
+function perfCheck(dt) {
+  fpsAcc += dt; fpsFrames++;
+  if (fpsAcc >= 1000) {
+    const fps = fpsFrames / (fpsAcc / 1000);
+    if (fps < 50 && particles.length > 900) particles.length = Math.floor(particles.length * 0.9);
+    fpsAcc = 0; fpsFrames = 0;
+  }
+}
+
 // ============================================================
-// Book covers — local override for #1, fallback chain for the rest.
+// Book covers — local override for #1, fallback chain for rest.
 // ============================================================
 const coverCards = [];
 function buildCovers() {
@@ -649,20 +955,17 @@ function buildCovers() {
     fb.className = "cover-fallback";
     fb.innerHTML = '<div class="fb-title">' + bk.title +
       '</div><div class="fb-author">' + bk.author + '</div>';
-    frame.appendChild(img);
-    frame.appendChild(fb);
+    frame.appendChild(img); frame.appendChild(fb);
     if (bk.tag) {
       const tag = document.createElement("div");
-      tag.className = "tag";
-      tag.textContent = bk.tag;
+      tag.className = "tag"; tag.textContent = bk.tag;
       frame.appendChild(tag);
     }
     const meta = document.createElement("div");
     meta.className = "cover-meta";
     meta.innerHTML = '<div class="c-title">' + bk.title +
       '</div><div class="c-author">' + bk.author + '</div>';
-    card.appendChild(frame);
-    card.appendChild(meta);
+    card.appendChild(frame); card.appendChild(meta);
     elCovers.appendChild(card);
     coverCards.push(card);
     loadCover(img, fb, bk);
@@ -670,15 +973,12 @@ function buildCovers() {
 }
 function loadCover(img, fb, bk) {
   const showFallback = () => { img.style.display = "none"; fb.style.display = "flex"; };
-
   if (bk.src) {
-    // Local override: this book only. No Open Library / Google Books.
     img.onerror = showFallback;
     img.onload = () => { if (img.naturalWidth <= 2) showFallback(); };
     img.src = bk.src;
     return;
   }
-
   const sources = [
     "https://covers.openlibrary.org/b/isbn/" + bk.isbn + "-L.jpg?default=false",
     "https://covers.openlibrary.org/b/isbn/" + bk.isbn + "-M.jpg?default=false"
@@ -692,8 +992,7 @@ function loadCover(img, fb, bk) {
         const lk = vi && vi.imageLinks;
         const u = lk && (lk.thumbnail || lk.smallThumbnail);
         if (!u) return showFallback();
-        img.onerror = showFallback;
-        img.onload = null;
+        img.onerror = showFallback; img.onload = null;
         img.src = u.replace("&zoom=1", "&zoom=2").replace("http://", "https://");
       })
       .catch(showFallback);
@@ -709,27 +1008,18 @@ function loadCover(img, fb, bk) {
 // ============================================================
 window.addEventListener("keydown", (e) => {
   const k = e.key;
-  if (k === "ArrowDown" || k === "ArrowRight" || k === " " || k === "Enter") {
-    e.preventDefault(); nextScene();
-  } else if (k === "ArrowUp" || k === "ArrowLeft" || k === "Backspace") {
-    e.preventDefault(); prevScene();
-  } else if (k === "p" || k === "P") {
-    paused = !paused;
-    document.body.classList.toggle("paused", paused);
-  } else if (k === "r" || k === "R") {
-    restart();
-  }
+  if (k === "ArrowDown" || k === "ArrowRight" || k === " " || k === "Enter") { e.preventDefault(); advance(); }
+  else if (k === "ArrowUp" || k === "ArrowLeft" || k === "Backspace") { e.preventDefault(); back(); }
+  else if (k === "p" || k === "P") { paused = !paused; document.body.classList.toggle("paused", paused); }
+  else if (k === "r" || k === "R") { restart(); }
 });
-window.addEventListener("click", () => nextScene());
-
-// One scene change per wheel gesture (debounced).
+window.addEventListener("click", () => advance());
 let wheelLock = 0;
 window.addEventListener("wheel", (e) => {
   const now = performance.now();
-  if (now - wheelLock < 700) return;
-  if (Math.abs(e.deltaY) < 6) return;
+  if (now - wheelLock < 700 || Math.abs(e.deltaY) < 6) return;
   wheelLock = now;
-  e.deltaY > 0 ? nextScene() : prevScene();
+  e.deltaY > 0 ? advance() : back();
 }, { passive: true });
 
 // ============================================================
@@ -741,15 +1031,16 @@ function resize() {
   cx = W / 2; cy = H / 2;
   canvas.width = Math.floor(W * dpr);
   canvas.height = Math.floor(H * dpr);
-  canvas.style.width = W + "px";
-  canvas.style.height = H + "px";
+  canvas.style.width = W + "px"; canvas.style.height = H + "px";
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   if (!particles.length) buildParticles();
-  else buildBookGeometry();
+  if (three) { three.renderer.setSize(W, H); three.camera.aspect = W / H; three.camera.updateProjectionMatrix(); }
+  layoutPageText();
 }
 window.addEventListener("resize", resize);
 
 resize();
+buildText();
 buildCovers();
 updateUI();
 requestAnimationFrame(frame);
