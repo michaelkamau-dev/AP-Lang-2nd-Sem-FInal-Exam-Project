@@ -63,6 +63,14 @@
     padding-left: 1.1em; text-indent: -1.1em; margin-bottom: 9px;
   }
   .ecard li::before { content: "— "; color: rgba(255,255,255,0.4); }
+  .ecard .escan {
+    display: none; width: 100%; max-height: 42vh; object-fit: contain;
+    background: #fff; border-radius: 3px;
+    box-shadow: 0 0 34px rgba(255,255,255,0.06);
+  }
+  .ecard.has-img { padding: 0; }
+  .ecard.has-img .escan { display: block; }
+  .ecard.has-img .etext { display: none; }
   #card0 { top: 7vh;  left: 5vw; }
   #card1 { top: 7vh;  right: 5vw; }
   #card2 { bottom: 7vh; left: 5vw; }
@@ -205,19 +213,19 @@ const CONFIG = {
   text: {
     markers: ["01 / EARLY", "02 / HIROSHIMA", "03 / INDEPENDENT READING", "04 / NOW"],
     cards: [
-      { head: "MAIRS  /  C+", bullets: [
+      { img: "essays/mairs.png", head: "MAIRS  /  C+", bullets: [
         "Missed her actual project. She IS shaping the standard.",
         "Treated \"I am not a disease\" as a throwaway line. It deserved a paragraph.",
         "Stopped at \"empowering.\" Never asked why this word." ] },
-      { head: "MLK  /  A-", bullets: [
+      { img: "essays/mlk.png", head: "MLK  /  A-", bullets: [
         "Mixed up the Emancipation Proclamation with the Declaration of Independence.",
         "Called civil rights organizers \"directionless.\" They weren't.",
         "Drifted into present-day commentary. Should have stayed in the moment." ] },
-      { head: "CLINTON  /  C", bullets: [
+      { img: "essays/clinton.png", head: "CLINTON  /  C", bullets: [
         "Flattened a conditional claim into a causal one.",
         "Skipped the Lewinsky context entirely.",
         "Saw optimistic tone but missed that it was deflection." ] },
-      { head: "GOLDEN BREAKTHROUGH  /  B+", bullets: [
+      { img: "essays/golden_breakthrough.png", head: "GOLDEN BREAKTHROUGH  /  B+", bullets: [
         "Sensory detail was landing. Chlorine. Vending machine coils. \"Ginormous.\"",
         "Voice and register felt honest.",
         "Mechanics still messy. Doubled periods. Comma splices. Repetition." ] }
@@ -723,8 +731,18 @@ function layoutPageText() {
 // Build DOM text from CONFIG.
 function buildText() {
   CONFIG.text.cards.forEach((c, i) => {
-    $("card" + i).innerHTML = '<div class="eh">' + c.head + '</div><ul>' +
-      c.bullets.map((b) => "<li>" + b + "</li>").join("") + "</ul>";
+    const el = $("card" + i);
+    // Image-card with automatic text fallback if the PNG is missing.
+    el.innerHTML =
+      '<img class="escan" alt="">' +
+      '<div class="etext"><div class="eh">' + c.head + '</div><ul>' +
+      c.bullets.map((b) => "<li>" + b + "</li>").join("") + "</ul></div>";
+    if (c.img) {
+      const im = el.querySelector(".escan");
+      im.onload = () => { if (im.naturalWidth > 2) el.classList.add("has-img"); };
+      im.onerror = () => { el.classList.remove("has-img"); };
+      im.src = c.img;
+    }
   });
   const h = CONFIG.text.hiro;
   elHiro.innerHTML = '<div class="hh">' + h.header + '</div><ul>' +
