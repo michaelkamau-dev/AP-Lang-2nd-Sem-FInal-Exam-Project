@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>A Reading Year</title>
+<title>My Year In AP Language</title>
 
 <!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -45,36 +45,132 @@
     opacity: 0; transition: opacity 0.8s ease;
   }
 
-  /* Scene 1.B essay cards */
+  /* Title screen (Scene 1.A) */
+  #titlescreen {
+    position: absolute; left: 50%; top: 16%; transform: translateX(-50%);
+    text-align: center; opacity: 0; transition: opacity 1.4s ease;
+    pointer-events: none; max-width: 86vw;
+  }
+  #titlescreen .tt-title {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(40px, 5.2vw, 78px); color: rgba(255,255,255,0.95);
+    letter-spacing: 0.01em;
+  }
+  #titlescreen .tt-sub {
+    font-family: var(--mono); text-transform: uppercase;
+    letter-spacing: 0.28em; font-size: clamp(11px, 1vw, 14px);
+    color: rgba(255,255,255,0.45); margin-top: 18px;
+  }
+
+  /* Scene 1.B essay images — plain pictures, no card chrome */
   #cards { position: absolute; inset: 0; pointer-events: none; }
   .ecard {
-    position: absolute; width: 38vw; max-width: 560px; padding: 30px 34px;
+    position: absolute; width: 26vw; max-width: 360px;
     opacity: 0; transition: opacity 0.9s ease;
+    display: flex; flex-direction: column; align-items: center;
   }
-  .ecard .eh {
-    font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.12em;
-    font-size: clamp(16px, 1.7vw, 22px); color: rgba(255,255,255,0.9);
-    margin-bottom: 16px;
-  }
-  .ecard ul { list-style: none; }
-  .ecard li {
-    font-family: var(--serif); font-size: clamp(14px, 1.25vw, 17px);
-    color: rgba(255,255,255,0.75); line-height: 1.42;
-    padding-left: 1.1em; text-indent: -1.1em; margin-bottom: 9px;
-  }
-  .ecard li::before { content: "— "; color: rgba(255,255,255,0.4); }
   .ecard .escan {
-    display: none; width: 100%; max-height: 42vh; object-fit: contain;
-    background: #fff; border-radius: 3px;
-    box-shadow: 0 0 34px rgba(255,255,255,0.06);
+    display: none; width: 100%; max-height: 36vh; object-fit: contain;
+    background: #fff;
+    box-shadow: 0 0 50px rgba(255,255,255,0.08), 0 12px 36px rgba(0,0,0,0.65);
   }
-  .ecard.has-img { padding: 0; }
+  .ecard .efallback {
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.18em;
+    font-size: clamp(13px, 1.2vw, 16px); color: rgba(255,255,255,0.55);
+    padding: 60px 20px; text-align: center;
+    border: 1px dashed rgba(255,255,255,0.18);
+    width: 100%; min-height: 30vh;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ecard .elabel {
+    font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.22em;
+    font-size: clamp(11px, 1vw, 14px); color: rgba(255,255,255,0.78);
+    margin-top: 14px; text-align: center;
+  }
   .ecard.has-img .escan { display: block; }
-  .ecard.has-img .etext { display: none; }
-  #card0 { top: 7vh;  left: 5vw; }
-  #card1 { top: 7vh;  right: 5vw; }
-  #card2 { bottom: 7vh; left: 5vw; }
-  #card3 { bottom: 7vh; right: 5vw; }
+  .ecard.has-img .efallback { display: none; }
+  #card0 { top: 8vh;  left: 5vw; }
+  #card1 { top: 8vh;  right: 5vw; }
+  #card2 { bottom: 8vh; left: 5vw; }
+  #card3 { bottom: 8vh; right: 5vw; }
+
+  /* Scene 1.B central tagline "my writing was bad." */
+  #tagline {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    font-family: var(--serif); font-size: clamp(40px, 5.4vw, 82px);
+    color: rgba(255,255,255,0.96); text-align: center;
+    opacity: 0; transition: opacity 1.1s ease; pointer-events: none;
+    text-shadow: 0 0 40px rgba(0,0,0,0.9);
+  }
+  #tagline .tag-red { color: #ff3a3a; }
+
+  /* Scene 1.B problem-word cloud: flickering phrases around the tagline */
+  #problems {
+    position: absolute; inset: 0; pointer-events: none;
+    opacity: 0; transition: opacity 0.8s ease;
+  }
+  #problems .pw {
+    position: absolute; transform: translate(-50%, -50%);
+    font-family: var(--serif); font-style: italic;
+    color: rgba(255,255,255,0.55);
+    white-space: nowrap;
+    opacity: 0;
+  }
+  @keyframes pwFlicker {
+    0%   { opacity: 0; }
+    20%  { opacity: 0.55; }
+    50%  { opacity: 0.85; }
+    80%  { opacity: 0.45; }
+    100% { opacity: 0; }
+  }
+
+  /* Scene 2: Hiroshima book-cover composition. Red sun + torii + heavy title. */
+  #hirobook {
+    position: absolute; inset: 0; pointer-events: none;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 1.6s ease;
+  }
+  #hirobook .hb-author {
+    font-family: var(--mono); letter-spacing: 0.38em;
+    font-size: clamp(11px, 1vw, 14px);
+    color: rgba(255,255,255,0.62);
+    margin-bottom: 26px;
+  }
+  #hirobook .hb-title {
+    font-family: "Helvetica Neue", "Arial Black", Impact, sans-serif;
+    font-weight: 900; letter-spacing: 0.14em;
+    font-size: clamp(56px, 8.8vw, 124px); line-height: 1;
+    color: #fff; margin-top: 28px;
+    text-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+  #hirobook .hb-sub {
+    font-family: var(--mono); letter-spacing: 0.32em;
+    font-size: clamp(10px, 0.9vw, 12px);
+    color: rgba(255,255,255,0.5);
+    margin-top: 22px;
+  }
+  #hirobook .hb-sun {
+    position: relative;
+    width: clamp(220px, 32vh, 360px);
+    height: clamp(220px, 32vh, 360px);
+    border-radius: 50%;
+    background: radial-gradient(circle at 36% 34%, #ff5840 0%, #e02320 50%, #b0181a 100%);
+    box-shadow:
+      0 0 90px 4px rgba(220, 36, 28, 0.55),
+      0 0 28px 0 rgba(255, 90, 72, 0.35),
+      inset 0 -18px 50px rgba(120, 18, 18, 0.55);
+    animation: hbSunPulse 4.5s ease-in-out infinite;
+  }
+  @keyframes hbSunPulse {
+    0%, 100% { box-shadow: 0 0 90px 4px rgba(220, 36, 28, 0.55), 0 0 28px 0 rgba(255, 90, 72, 0.35), inset 0 -18px 50px rgba(120, 18, 18, 0.55); }
+    50%      { box-shadow: 0 0 130px 10px rgba(220, 36, 28, 0.72), 0 0 40px 4px rgba(255, 110, 80, 0.45), inset 0 -18px 50px rgba(120, 18, 18, 0.55); }
+  }
+  #hirobook .hb-torii {
+    position: absolute; left: 50%; top: 52%;
+    transform: translate(-50%, -50%);
+    width: 62%; height: 62%;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+  }
 
   /* Scene 2.C text */
   #hiro {
@@ -83,45 +179,72 @@
   }
   #hiro .hh {
     font-family: var(--serif); font-style: italic;
-    font-size: clamp(32px, 3.8vw, 56px); color: rgba(255,255,255,0.95);
-    margin-bottom: 34px;
+    font-size: clamp(40px, 4.6vw, 68px); color: rgba(255,255,255,0.96);
+    margin-bottom: 44px; letter-spacing: -0.005em;
   }
   #hiro ul { list-style: none; display: inline-block; text-align: left; }
   #hiro li {
-    font-family: var(--serif); font-size: clamp(16px, 1.6vw, 20px);
-    color: rgba(255,255,255,0.75); line-height: 1.6;
+    font-family: var(--serif); font-size: clamp(22px, 2.1vw, 30px);
+    color: rgba(255,255,255,0.82); line-height: 1.55;
+    padding-left: 1.1em; text-indent: -1.1em; margin-bottom: 12px;
   }
+  #hiro li::before { content: "— "; color: rgba(255,255,255,0.45); }
   #hiro .hc {
     font-family: var(--serif); font-style: italic;
-    font-size: clamp(19px, 1.9vw, 24px); color: rgba(255,255,255,0.9);
-    margin-top: 34px;
+    font-size: clamp(22px, 2.3vw, 30px); color: rgba(255,255,255,0.92);
+    margin-top: 48px;
   }
 
-  /* Scene 3 page + side text */
+  /* Scene 2.B: Hiroshima book-cover view + story bullets */
+  #hirocover {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    gap: 6vw; opacity: 0; transition: opacity 1.2s ease;
+    pointer-events: none;
+  }
+  #hirocover .hc-img {
+    width: clamp(240px, 28vw, 380px);
+    height: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08);
+    border-radius: 2px;
+  }
+  #hirocover .hc-text {
+    max-width: 38vw;
+  }
+  #hirocover .hc-head {
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(28px, 3vw, 44px); color: rgba(255,255,255,0.95);
+    margin-bottom: 32px; line-height: 1.2;
+  }
+  #hirocover .hc-list { list-style: none; }
+  #hirocover .hc-list li {
+    font-family: var(--serif); font-size: clamp(20px, 1.9vw, 28px);
+    color: rgba(255,255,255,0.84); line-height: 1.5;
+    padding-left: 1.2em; text-indent: -1.2em; margin-bottom: 16px;
+  }
+  #hirocover .hc-list li::before { content: "— "; color: rgba(255,255,255,0.5); }
+
+  /* Scene 3 page text — positioned at the screen edges, OFF the book */
   .pagetext {
-    position: absolute; opacity: 0; transition: opacity 1s ease; text-align: center;
+    position: absolute; opacity: 0; transition: opacity 1s ease; text-align: left;
+    width: 28vw; max-width: 420px; top: 50%; transform: translateY(-50%);
   }
+  #leftpage  { left: 5vw;  }
+  #rightpage { right: 5vw; }
   .pagetext .ph {
-    font-family: var(--serif); font-style: italic; font-size: 18px;
-    color: rgba(255,255,255,0.85); margin-bottom: 14px;
+    font-family: var(--serif); font-style: italic;
+    font-size: clamp(24px, 2.6vw, 36px);
+    color: rgba(255,255,255,0.95); margin-bottom: 28px;
+    letter-spacing: -0.005em; line-height: 1.25;
   }
-  .pagetext ul { list-style: none; text-align: left; display: inline-block; }
+  .pagetext ul { list-style: none; }
   .pagetext li {
-    font-family: var(--serif); font-size: 14px; color: rgba(255,255,255,0.8);
-    line-height: 1.5; margin-bottom: 8px;
-    padding-left: 1em; text-indent: -1em;
+    font-family: var(--serif); font-size: clamp(19px, 1.9vw, 26px);
+    color: rgba(255,255,255,0.84); line-height: 1.45; margin-bottom: 16px;
+    padding-left: 1.1em; text-indent: -1.1em;
   }
-  .pagetext li::before { content: "— "; color: rgba(255,255,255,0.4); }
-  #sidepanel { position: absolute; opacity: 0; transition: opacity 1.1s ease; }
-  #sidepanel .sh {
-    font-family: var(--serif); font-style: italic; font-size: 14px;
-    color: rgba(255,255,255,0.6); margin-bottom: 10px;
-  }
-  #sidepanel ul { list-style: none; }
-  #sidepanel li {
-    font-family: var(--serif); font-size: 12px; color: rgba(255,255,255,0.5);
-    line-height: 1.7;
-  }
+  .pagetext li::before { content: "— "; color: rgba(255,255,255,0.5); }
+  #sidepanel { display: none; }
 
   #book-title {
     position: absolute; left: 50%; top: 18%; transform: translateX(-50%);
@@ -136,6 +259,50 @@
     color: rgba(255,255,255,0.95); text-align: center; max-width: 84vw;
     opacity: 0; transition: opacity 1.4s ease;
   }
+
+  /* Scene 5: credits scroll + black-hole fade overlay */
+  #endfade {
+    position: absolute; inset: 0; background: #000;
+    opacity: 0; pointer-events: none;
+    transition: opacity 1s ease;
+    z-index: 4;
+  }
+  #credits {
+    position: absolute; inset: 0; overflow: hidden;
+    display: flex; justify-content: center;
+    pointer-events: none; opacity: 0;
+    transition: opacity 1.2s ease;
+    z-index: 5;
+  }
+  #credits .cd-inner {
+    position: absolute; top: 100%; left: 50%;
+    transform: translateX(-50%);
+    text-align: center; max-width: 80vw;
+    font-family: var(--serif);
+    color: rgba(255,255,255,0.92);
+    transition: transform linear;
+  }
+  #credits .cd-line {
+    font-size: clamp(20px, 2vw, 28px);
+    line-height: 1.7;
+    margin: 8px 0;
+  }
+  #credits .cd-line.big {
+    font-size: clamp(30px, 3.2vw, 44px);
+    font-style: italic;
+    margin: 28px 0;
+    color: rgba(255,255,255,0.98);
+  }
+  #credits .cd-line.mono {
+    font-family: var(--mono);
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    font-size: clamp(13px, 1.1vw, 16px);
+    color: rgba(255,255,255,0.7);
+  }
+  #credits .cd-line.dim { color: rgba(255,255,255,0.45); }
+  #credits .cd-gap { height: 32px; }
+  #credits .cd-gap.big { height: 80px; }
 
   #covers {
     position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -190,11 +357,41 @@
   <div id="ui">
     <div id="marker"></div>
     <div id="counter"></div>
+    <div id="titlescreen">
+      <div class="tt-title"></div>
+      <div class="tt-sub"></div>
+    </div>
     <div id="cards">
       <div class="ecard" id="card0"></div>
       <div class="ecard" id="card1"></div>
       <div class="ecard" id="card2"></div>
       <div class="ecard" id="card3"></div>
+    </div>
+    <div id="tagline"></div>
+    <div id="problems"></div>
+    <div id="hirobook">
+      <div class="hb-author">JOHN HERSEY</div>
+      <div class="hb-sun">
+        <svg class="hb-torii" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- kasagi: top curved beam -->
+          <path d="M 18 70 Q 100 56 182 70 L 178 86 L 22 86 Z" fill="#fff"/>
+          <!-- nuki: second beam -->
+          <rect x="34" y="94" width="132" height="13" fill="#fff"/>
+          <!-- left pillar (slight outward slant toward base) -->
+          <path d="M 52 107 L 60 107 L 64 178 L 46 178 Z" fill="#fff"/>
+          <!-- right pillar -->
+          <path d="M 140 107 L 148 107 L 154 178 L 136 178 Z" fill="#fff"/>
+        </svg>
+      </div>
+      <div class="hb-title">HIROSHIMA</div>
+      <div class="hb-sub">THE BOOK  /  READ FEBRUARY · 2ND SEMESTER</div>
+    </div>
+    <div id="hirocover">
+      <img class="hc-img" alt="Hiroshima book cover">
+      <div class="hc-text">
+        <div class="hc-head"></div>
+        <ul class="hc-list"></ul>
+      </div>
     </div>
     <div id="hiro"></div>
     <div id="book-title"></div>
@@ -203,6 +400,8 @@
     <div id="sidepanel"></div>
     <div id="covers"></div>
     <div id="final"></div>
+    <div id="credits"><div class="cd-inner"></div></div>
+    <div id="endfade"></div>
   </div>
 
 <script>
@@ -211,57 +410,79 @@
 // ============================================================
 const CONFIG = {
   text: {
-    markers: ["01 / EARLY", "02 / HIROSHIMA", "03 / INDEPENDENT READING", "04 / NOW"],
+    title: { line1: "My Year in AP Lang", line2: "Michael Kamau / AP Lang" },
+    tagline: { before: "my writing was ", red: "bad." },
+    problems: [
+      "weak thesis", "no intro", "no conclusion", "buried the point",
+      "walked the passage", "missed the claim", "skipped the context",
+      "wrong document", "called them directionless", "drifted to today",
+      "redundant", "comma splices", "double periods", "loose grammar",
+      "too thin", "needs revision", "vague", "off topic"
+    ],
+    markers: ["01 / EARLY", "02 / HIROSHIMA", "03 / INDEPENDENT READING", "04 / NOW", "05 / END"],
+    credits: [
+      { t: "It's always fun to walk into class" },
+      { t: "not really knowing what's on the agenda for the day." },
+      { t: "", gap: 1 },
+      { t: "AP Lang was definitely one of those classes." },
+      { t: "", gap: 1 },
+      { t: "From the in-class debates," },
+      { t: "the class competitions," },
+      { t: "the \u201Cwows\u201D and \u201Cwhoops,\u201D" },
+      { t: "", gap: 1 },
+      { t: "it quickly became my favorite class this year.", big: true },
+      { t: "", gap: 2 },
+      { t: "Thank you, Mr. Schleuter,", big: true },
+      { t: "for the effort you put into making this course" },
+      { t: "as interactive and enjoyable as it was." },
+      { t: "", gap: 2 },
+      { t: "—" },
+      { t: "Michael Kamau", mono: true },
+      { t: "the end", mono: true, dim: true }
+    ],
     cards: [
-      { img: "essays/mairs.png", head: "MAIRS  /  C+", bullets: [
-        "Missed her actual project. She IS shaping the standard.",
-        "Treated \"I am not a disease\" as a throwaway line. It deserved a paragraph.",
-        "Stopped at \"empowering.\" Never asked why this word." ] },
-      { img: "essays/mlk.png", head: "MLK  /  A-", bullets: [
-        "Mixed up the Emancipation Proclamation with the Declaration of Independence.",
-        "Called civil rights organizers \"directionless.\" They weren't.",
-        "Drifted into present-day commentary. Should have stayed in the moment." ] },
-      { img: "essays/clinton.png", head: "CLINTON  /  C", bullets: [
-        "Flattened a conditional claim into a causal one.",
-        "Skipped the Lewinsky context entirely.",
-        "Saw optimistic tone but missed that it was deflection." ] },
-      { img: "essays/golden_breakthrough.png", head: "GOLDEN BREAKTHROUGH  /  B+", bullets: [
-        "Sensory detail was landing. Chlorine. Vending machine coils. \"Ginormous.\"",
-        "Voice and register felt honest.",
-        "Mechanics still messy. Doubled periods. Comma splices. Repetition." ] }
+      { img: "essays/mairs.png", label: "MAIRS  /  C+" },
+      { img: "essays/mlk.png", label: "MLK  /  A-" },
+      { img: "essays/clinton.png", label: "CLINTON  /  C" },
+      { img: "essays/golden_breakthrough.png", label: "GOLDEN BREAKTHROUGH  /  B+" }
     ],
     hiro: {
-      header: "this is the story that broke me",
-      bullets: [
-        "Hard language and dense diction",
-        "Required deep, slow analysis",
-        "Couldn't tell what the rhetorical devices were doing",
-        "Non-chronological. Jumped around in time.",
-        "Had to re-read sentences to follow what was happening",
-        "Had to look up words to understand meaning",
-        "Read outside of class to keep up"
+      // Sub 1: actual book cover + what the book was like
+      bookImg: "covers/hiroshima-book.jpg",
+      bookHeader: "what the book was like.",
+      bookBullets: [
+        "Genuinely difficult to follow at times.",
+        "Looked up more words than I read.",
+        "Challenging rhetorical strategies to analyze."
       ],
-      closing: "I was a worse reader than I thought."
-    },
-    bookTitle: "Narrative of the Life of Frederick Douglass",
-    leftPage: {
-      header: "HOW I APPROACHED THE BOOK",
+      // Sub 2: reflection
+      header: "this story humbled me.",
       bullets: [
-        "Read each sentence to understand its purpose",
-        "Went into each chapter like a detective looking for rhetorical devices",
-        "Used context clues. Looked words up. Tied meaning back to the text."
+        "I came in confident.",
+        "I left knowing I wasn't ready.",
+        "So I learned to read differently"
+      ],
+      closing: "We then had to choose a book."
+    },
+    bookTitle: "My Book: Narrative of the Life of Frederick Douglass",
+    leftPage: {
+      header: "I read this one with purpose.",
+      bullets: [
+        "Tracked the argument sentence by sentence.",
+        "Marked every rhetorical move I caught.",
+        "Stopped on words I didn't know."
       ]
     },
     rightPage: {
-      header: "WHAT I GAINED",
-      bullets: [ "Reading comprehension", "Rhetorical analysis", "Passion for learning new words" ]
+      header: "It changed how I read.",
+      bullets: [
+        "I was no longer reading passively.",
+        "I became a detective while reading and it became fun."
+      ]
     },
-    side: {
-      header: "what it did for me",
-      items: [ "Made me slow down", "Made me curious", "Made me a real reader" ]
-    },
+    side: { header: "", items: [] },
     finalPhrase: "AP Lang accelerated my love for reading.",
-    counterTotal: "04",
+    counterTotal: "05",
     books: [
       { title: "The Rage of Innocence", author: "Kristin Henning",
         isbn: "9781524748906", src: "covers/rage-of-innocence.jpg" },
@@ -277,12 +498,20 @@ const CONFIG = {
     cardStaggerMs: 600, cardFadeMs: 900,
     sphere: { radiusFrac: 0.22, breatheMs: 6000, breatheAmt: 0.10, spin: 0.22, clear: 0.30 },
     hiro: { panMs: 3000, dolly: 0.05, clear: 0.30 },
-    book: { heightFrac: 0.36, openMs: 1200, closeMs: 1200,
+    book: { heightFrac: 0.30, openMs: 1200, closeMs: 1200,
             rowsPerPage: 8, highlightOnMs: 1500, highlightFadeMs: 1000,
             wordRatePerSec: 3, wordRisePx: 250, wordLifeMs: 2600,
             shapeshiftMs: 1500, sideDelayMs: 2000, clear: 0.32 },
     vortex: { maxFrac: 0.55, squash: 0.62, clear: 0.12,
-              coverDelayMs: 4000, coverStaggerMs: 600, coverFadeMs: 1200 }
+              coverDelayMs: 4000, coverStaggerMs: 600, coverFadeMs: 1200 },
+    end: {
+      clear: 0.18,
+      burstMs: 1600,        // particles converging to form the black hole
+      holdMs: 1800,         // black hole stable, before user advances
+      diveMs: 2400,         // camera zooming into the hole
+      fadeBlackMs: 800,     // pure black settle before credits
+      creditsScrollMs: 32000 // credits scroll duration
+    }
   }
 };
 
@@ -340,6 +569,8 @@ function buildParticles() {
       p.bk = bookRole(k);
     }
     if (role === "accent") p.w = { on: false, age: 0, life: 0, vy: 0 };
+    // Hiroshima scene color: ~28% of particles are red, the rest white.
+    p.isRed = (Math.random() < 0.28);
     particles[i] = p;
   }
 }
@@ -409,6 +640,55 @@ function targetsForCards(p) {
   }
 }
 
+// Scene 2 (Hiroshima): particles swirl around the red sun + drift radially outward.
+// Some are RED (concentrated near the sun), some are WHITE (drifting outward).
+// `panY` is added so the composition lifts away during 2.B pan-down.
+let mushPanY = 0;
+function targetsForHiroshima(p, st) {
+  const sunCX = cx;
+  const sunCY = cy;
+  const sunR  = Math.min(W, H) * 0.18;                 // matches the CSS sun roughly
+  const slowT = st / 1000;
+
+  // Stable per-particle hash for role + orbit
+  const hash = (p.ph * 7.31 + p.sp * 3.7) % 1;
+
+  let tx, ty, ta;
+
+  if (hash < 0.55) {
+    // SWIRL: particles orbit at varying radii around the sun, slow rotation.
+    const r0 = sunR * (1.05 + (p.sx + 1) * 0.95);      // 1.05x to 3.0x sun radius
+    const angSpeed = 0.06 + (p.sp * 0.10);             // each particle slightly different
+    const ang = p.ph * 1.7 + slowT * angSpeed;
+    const wobble = Math.sin(slowT * 0.5 + p.ph * 3) * 8;
+    tx = sunCX + Math.cos(ang) * (r0 + wobble);
+    ty = sunCY + Math.sin(ang) * (r0 + wobble) * 0.82; // slight elliptical squash
+    ta = 0.18 + 0.45 * Math.max(0, 1 - (r0 - sunR) / (sunR * 1.8));
+  } else if (hash < 0.85) {
+    // RADIAL EMBERS: particles emanate outward from the sun, looping back
+    const ang = p.ph * TAU;
+    const period = 4500 + p.sp * 4000;
+    const t = ((st + p.ph * period) % period) / period;  // 0..1 cycle
+    const rNow = sunR * (0.95 + t * 3.2);
+    tx = sunCX + Math.cos(ang) * rNow;
+    ty = sunCY + Math.sin(ang) * rNow * 0.9;
+    ta = 0.35 * (1 - t);                                  // fade as they fly out
+  } else {
+    // FAR DRIFT: ambient particles scattered around the rest of the frame
+    const f = st / 1000 * 0.18;
+    const nx = Math.sin(p.ph * 2.3 + f) * Math.cos(p.ph * 1.7 - f * 0.6);
+    const ny = Math.cos(p.ph * 1.9 + f * 0.8) * Math.sin(p.ph * 2.1 - f * 0.5);
+    tx = sunCX + nx * W * 0.45;
+    ty = sunCY + ny * H * 0.45;
+    ta = 0.16;
+  }
+
+  // pan-down offset (rises out of frame for sub 1)
+  p.tx = tx;
+  p.ty = ty + mushPanY;
+  p.ta = ta;
+}
+
 // Scene 3: hinge book. openAmt 0 = closed rectangle, 1 = two flat pages.
 let bookOpenAmt = 0;
 let highlightIdx = 0;
@@ -459,6 +739,83 @@ function targetsForVortex(p, dt) {
   p.ty = cy + Math.sin(p.va) * p.vr * v.squash;
   p.ta = Math.sin(clamp(p.vr / maxR, 0, 1) * Math.PI) * 0.7;
   if (p.vr < maxR * 0.05) p.vr = 0;
+}
+
+// Scene 5: particles spiral inward and feed the black hole.
+function targetsForBlackhole(p, st, intensity) {
+  const focalX = W / 2;
+  const focalY = H / 2;
+  if (p.bhR === undefined) {
+    p.bhR = Math.max(W, H) * (0.45 + 0.5 * p.vseed);
+    p.bhA = Math.random() * TAU;
+    p.bhSpd = 0.6 + p.vseed * 1.8;
+  }
+  // Spin rate accelerates as intensity grows (0..1).
+  p.bhA += 0.0012 * p.bhSpd * (1 + intensity * 4);
+  // Pull-in rate accelerates the same way.
+  p.bhR -= 0.5 * (0.4 + p.vseed) * (1 + intensity * 6);
+  if (p.bhR < 6) {
+    p.bhR = Math.max(W, H) * (0.55 + 0.45 * Math.random());
+    p.bhA = Math.random() * TAU;
+  }
+  p.tx = focalX + Math.cos(p.bhA) * p.bhR;
+  p.ty = focalY + Math.sin(p.bhA) * p.bhR * 0.42;   // squash matches ring aspect
+  // Brighter as they approach the throat.
+  const closeness = 1 - clamp(p.bhR / (Math.max(W, H) * 0.6), 0, 1);
+  p.ta = 0.25 + 0.6 * closeness;
+}
+
+// Scene 5: wireframe wormhole — viewer looks down into a throat at screen center.
+// Rings are concentric ellipses; brighter (closer) outward, dim/dark at the center.
+// `zoom` > 1 simulates camera diving in (rings expand toward the edges).
+function drawBlackhole(ctx2, fadeIn, zoom) {
+  const focalX = W / 2;
+  const focalY = H / 2;
+  const N = 22;
+  const RADIALS = 24;
+  const rMax = Math.min(W, H) * 0.95 * zoom;
+  const rMin = 16 * zoom;
+  // Ring radii, exponential spacing so they pack toward the throat
+  const rings = [];
+  for (let i = 0; i < N; i++) {
+    const t = i / (N - 1);                 // 0 outer, 1 inner
+    const eased = Math.pow(t, 1.8);         // perspective compression near center
+    const rx = lerp(rMax, rMin, eased);
+    const ry = rx * 0.42;                   // viewer-tilted, somewhat flattened
+    const dimness = eased;                  // 0 outer ring (bright) -> 1 inner (dark)
+    rings.push({ rx, ry, dimness });
+  }
+  ctx2.save();
+  // Radial spokes connect every angle across every ring
+  ctx2.lineWidth = 0.7;
+  for (let j = 0; j < RADIALS; j++) {
+    const ang = (j / RADIALS) * TAU;
+    const ca = Math.cos(ang), sa = Math.sin(ang);
+    ctx2.beginPath();
+    for (let i = 0; i < N; i++) {
+      const r = rings[i];
+      const x = focalX + ca * r.rx;
+      const y = focalY + sa * r.ry;
+      if (i === 0) ctx2.moveTo(x, y); else ctx2.lineTo(x, y);
+    }
+    ctx2.strokeStyle = "rgba(255,255,255," + (0.22 * fadeIn).toFixed(3) + ")";
+    ctx2.stroke();
+  }
+  // Rings, dimmer toward the throat
+  ctx2.lineWidth = 0.9;
+  for (const r of rings) {
+    const a = (1 - r.dimness * 0.92) * fadeIn * 0.7;
+    ctx2.strokeStyle = "rgba(255,255,255," + a.toFixed(3) + ")";
+    ctx2.beginPath();
+    ctx2.ellipse(focalX, focalY, r.rx, r.ry, 0, 0, TAU);
+    ctx2.stroke();
+  }
+  // Void at the throat
+  ctx2.fillStyle = "rgba(0,0,0," + fadeIn.toFixed(3) + ")";
+  ctx2.beginPath();
+  ctx2.ellipse(focalX, focalY, rMin * 1.05, rMin * 1.05 * 0.42, 0, 0, TAU);
+  ctx2.fill();
+  ctx2.restore();
 }
 
 function ambientDrift(p, simS) {
@@ -657,16 +1014,20 @@ let closing = false, closeT0 = 0;
 let coverStart = -1;
 let lastTS = null, fpsAcc = 0, fpsFrames = 0;
 
-const subCount = [2, 2, 4, 1];   // subs per scene
+const subCount = [2, 3, 4, 1, 3];   // subs per scene (scene 4: hole forms, dive, credits)
 
 const elMarker = $("marker"), elCounter = $("counter"), elTitle = $("book-title");
 const elFinal = $("final"), elCovers = $("covers"), elHiro = $("hiro");
 const elLeft = $("leftpage"), elRight = $("rightpage"), elSide = $("sidepanel");
+const elTitleScreen = $("titlescreen"), elTagline = $("tagline"), elHirobook = $("hirobook");
+const elProblems = $("problems"), elHirocover = $("hirocover");
+const elCredits = $("credits"), elCreditsInner = elCredits.querySelector(".cd-inner");
+const elEndfade = $("endfade");
 
 function setSub(s) { sub = s; subT0 = simT; updateUI(); }
 function gotoScene(i, s) {
   const wasThree = (scene === 1);
-  scene = clamp(i, 0, 3);
+  scene = clamp(i, 0, 4);
   sub = s || 0;
   sceneT0 = simT; subT0 = simT;
   closing = false; coverStart = -1; migrators = [];
@@ -674,34 +1035,47 @@ function gotoScene(i, s) {
   applyThree(wasThree);
   updateUI();
 }
-// Mount/dispose Three only for scene 2 (index 1).
+// Three.js is no longer used. Scene 2 (Hiroshima) renders as a 2D canvas mushroom cloud.
 function applyThree(wasThree) {
-  if (scene === 1) { mountThree(); $("three-stage").style.opacity = 1; canvas.style.opacity = 0; }
-  else {
-    $("three-stage").style.opacity = 0; canvas.style.opacity = 1;
-    if (wasThree) setTimeout(disposeThree, 750);
-  }
+  $("three-stage").style.opacity = 0;
+  canvas.style.opacity = 1;
+  if (wasThree) setTimeout(disposeThree, 100);
 }
 
 function advance() {
   if (phase === "intro") { phase = "scene"; scene = 0; sub = 0; sceneT0 = subT0 = simT; updateUI(); return; }
   if (scene === 0) { sub === 0 ? setSub(1) : gotoScene(1, 0); return; }
-  if (scene === 1) { sub === 0 ? setSub(1) : gotoScene(2, 0); return; }
+  if (scene === 1) {
+    if (sub < 2) { setSub(sub + 1); return; }
+    gotoScene(2, 0); return;
+  }
   if (scene === 2) {
     if (sub < 3) { setSub(sub + 1); return; }
     if (!closing) { closing = true; closeT0 = simT; }   // close then scene 4
     return;
   }
-  if (scene === 3) { if (coverStart < 0) { coverStart = simT; updateUI(); } }
+  if (scene === 3) {
+    if (coverStart < 0) { coverStart = simT; updateUI(); return; }
+    gotoScene(4, 0); return;
+  }
+  if (scene === 4) {
+    if (sub < 2) { setSub(sub + 1); return; }
+    return;  // last scene; stay here
+  }
 }
 function back() {
   if (phase === "intro") return;
   if (scene === 0) { if (sub > 0) setSub(0); return; }
-  if (scene === 1) { sub > 0 ? setSub(0) : gotoScene(0, 1); return; }
+  if (scene === 1) { sub > 0 ? setSub(sub - 1) : gotoScene(0, 1); return; }
   if (scene === 2) { sub > 0 ? setSub(sub - 1) : gotoScene(1, 0); closing = false; return; }
   if (scene === 3) {
     if (coverStart >= 0) { coverStart = -1; updateUI(); }
     else gotoScene(2, 3);
+    return;
+  }
+  if (scene === 4) {
+    if (sub > 0) { setSub(sub - 1); return; }
+    gotoScene(3, 0); coverStart = simT; updateUI(); return;
   }
 }
 function restart() {
@@ -712,31 +1086,25 @@ function restart() {
   updateUI();
 }
 
-// Position scene-3 page text over the open book each layout.
-function layoutPageText() {
-  const M = bookMetrics();
-  const pageCX = M.pw * 0.55;
-  elLeft.style.width = M.pw * 0.8 + "px";
-  elLeft.style.left = (cx - pageCX) + "px";
-  elLeft.style.top = (cy - M.bh * 0.34) + "px";
-  elLeft.style.transform = "translateX(-50%)";
-  elRight.style.width = M.pw * 0.8 + "px";
-  elRight.style.left = (cx + pageCX) + "px";
-  elRight.style.top = (cy - M.bh * 0.34) + "px";
-  elRight.style.transform = "translateX(-50%)";
-  elSide.style.left = (cx + M.pw + 70) + "px";
-  elSide.style.top = (cy - M.bh * 0.18) + "px";
-}
+// Scene 3 page text now lives at the screen edges (set in CSS), so no per-frame layout is needed.
+function layoutPageText() { /* CSS-positioned */ }
 
 // Build DOM text from CONFIG.
 function buildText() {
+  // Title screen
+  const t = CONFIG.text.title;
+  document.querySelector("#titlescreen .tt-title").textContent = t.line1;
+  document.querySelector("#titlescreen .tt-sub").textContent = t.line2;
+  // Tagline ("my writing was bad.")
+  const tg = CONFIG.text.tagline;
+  elTagline.innerHTML = tg.before + '<span class="tag-red">' + tg.red + '</span>';
+  // Essay images — plain pictures with text label fallback if missing
   CONFIG.text.cards.forEach((c, i) => {
     const el = $("card" + i);
-    // Image-card with automatic text fallback if the PNG is missing.
     el.innerHTML =
       '<img class="escan" alt="">' +
-      '<div class="etext"><div class="eh">' + c.head + '</div><ul>' +
-      c.bullets.map((b) => "<li>" + b + "</li>").join("") + "</ul></div>";
+      '<div class="efallback">' + c.label + '</div>' +
+      '<div class="elabel">' + c.label + '</div>';
     if (c.img) {
       const im = el.querySelector(".escan");
       im.onload = () => { if (im.naturalWidth > 2) el.classList.add("has-img"); };
@@ -744,10 +1112,41 @@ function buildText() {
       im.src = c.img;
     }
   });
+  // Problem-word cloud: build spans scattered around the center, each with its own flicker timing.
+  // Avoid the central tagline box (roughly 40vw x 18vh around screen center).
+  const probs = CONFIG.text.problems;
+  // Stable scatter — same positions every render so layout doesn't jump.
+  let seed = 17;
+  const rand = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+  elProblems.innerHTML = probs.map((p, i) => {
+    // Pick a position outside a central tagline-safe rectangle.
+    let cx, cy;
+    for (let tries = 0; tries < 20; tries++) {
+      cx = 8 + rand() * 84;   // 8vw .. 92vw
+      cy = 12 + rand() * 76;  // 12vh .. 88vh
+      const dx = Math.abs(cx - 50), dy = Math.abs(cy - 50);
+      if (dx > 24 || dy > 12) break;  // outside the tagline box
+    }
+    const size = 18 + Math.floor(rand() * 14);  // 18-32px
+    const delay = (rand() * 6).toFixed(2);
+    const dur = (4 + rand() * 4).toFixed(2);
+    const rot = ((rand() * 8) - 4).toFixed(1);
+    return '<span class="pw" style="left:' + cx.toFixed(2) + 'vw;top:' + cy.toFixed(2) +
+           'vh;font-size:' + size + 'px;transform:translate(-50%,-50%) rotate(' + rot +
+           'deg);animation:pwFlicker ' + dur + 's ease-in-out ' + delay +
+           's infinite;">' + p + '</span>';
+  }).join("");
   const h = CONFIG.text.hiro;
   elHiro.innerHTML = '<div class="hh">' + h.header + '</div><ul>' +
     h.bullets.map((b) => "<li>" + b + "</li>").join("") +
     '</ul><div class="hc">' + h.closing + "</div>";
+  // Hiroshima book-cover sub (sub 1): cover image + story bullets
+  const hcImg = elHirocover.querySelector(".hc-img");
+  hcImg.onerror = () => { hcImg.style.opacity = 0; };
+  hcImg.src = h.bookImg;
+  elHirocover.querySelector(".hc-head").textContent = h.bookHeader;
+  elHirocover.querySelector(".hc-list").innerHTML =
+    h.bookBullets.map((b) => "<li>" + b + "</li>").join("");
   const lp = CONFIG.text.leftPage, rp = CONFIG.text.rightPage, sd = CONFIG.text.side;
   elLeft.innerHTML = '<div class="ph">' + lp.header + '</div><ul>' +
     lp.bullets.map((b) => "<li>" + b + "</li>").join("") + "</ul>";
@@ -757,6 +1156,17 @@ function buildText() {
     sd.items.map((b) => "<li>" + b + "</li>").join("") + "</ul>";
   elTitle.textContent = CONFIG.text.bookTitle;
   elFinal.textContent = CONFIG.text.finalPhrase;
+  // Credits roll (scene 5)
+  elCreditsInner.innerHTML = CONFIG.text.credits.map((c) => {
+    if (!c.t && c.gap) {
+      return '<div class="cd-gap' + (c.gap > 1 ? ' big' : '') + '"></div>';
+    }
+    const cls = ["cd-line"];
+    if (c.big)  cls.push("big");
+    if (c.mono) cls.push("mono");
+    if (c.dim)  cls.push("dim");
+    return '<div class="' + cls.join(" ") + '">' + c.t + '</div>';
+  }).join("");
 }
 
 // Show the right overlay for the active scene/sub.
@@ -771,6 +1181,14 @@ function updateUI() {
 
   for (let i = 0; i < 4; i++) $("card" + i).style.opacity = 0;
   elHiro.style.opacity = 0;
+  if (!(onScene && scene === 1)) elHirobook.style.opacity = 0;
+  if (!(onScene && scene === 1 && sub === 1)) elHirocover.style.opacity = 0;
+  // Title screen: visible on Scene 1.A (scene 0, sub 0) and during intro
+  elTitleScreen.style.opacity = (phase === "intro" || (onScene && scene === 0 && sub === 0)) ? 1 : 0;
+  // Tagline ("my writing was bad."): visible on Scene 1.B (scene 0, sub 1)
+  elTagline.style.opacity = (onScene && scene === 0 && sub === 1) ? 1 : 0;
+  // Problem-word cloud: same scope as tagline
+  if (!(onScene && scene === 0 && sub === 1)) elProblems.style.opacity = 0;
   elTitle.style.opacity = (onScene && scene === 2) ? 1 : 0;
   if (!(onScene && scene === 2 && sub >= 2)) elLeft.style.opacity = 0;
   if (!(onScene && scene === 2 && sub >= 3)) elRight.style.opacity = 0;
@@ -780,7 +1198,14 @@ function updateUI() {
     elFinal.style.opacity = 0;
     coverCards.forEach((c) => (c.style.opacity = 0));
   }
-  if (onScene && scene === 2) layoutPageText();
+  // Scene 5 (end): credits and fade are driven by the frame loop instead.
+  // Reset them only when we leave scene 4.
+  if (!(onScene && scene === 4)) {
+    elCredits.style.opacity = 0;
+    elEndfade.style.opacity = 0;
+    elCreditsInner.style.transition = "none";
+    elCreditsInner.style.transform = "translateX(-50%)";
+  }
 }
 
 // ============================================================
@@ -798,23 +1223,34 @@ function frame(ts) {
     phase = "scene"; scene = 0; sub = 0; sceneT0 = subT0 = simT; updateUI();
   }
 
-  // Scene 2 runs on Three.js only.
+  // Scene 2 (Hiroshima). Sub 0 = red-sun title screen. Sub 1 = book-cover view + bullets.
+  // Sub 2 = pan out and "this story humbled me" reflection.
   if (phase === "scene" && scene === 1) {
-    ctx.clearRect(0, 0, W, H);
-    if (!paused) renderThree(dt, sub, st);
-    else if (three) three.renderer.render(three.scene, three.camera);
-    if (sub === 1) {
-      const done = st > SC.hiro.panMs;
-      elHiro.style.opacity = done ? 1 : 0;
+    if (sub === 0) {
+      elHirobook.style.opacity = clamp((simT - sceneT0 - 400) / 1400, 0, 1);
+      elHirocover.style.opacity = 0;
+      mushPanY += (0 - mushPanY) * 0.08;
+      elHiro.style.opacity = 0;
+    } else if (sub === 1) {
+      elHirobook.style.opacity = Math.max(0, 1 - st / 400);
+      elHirocover.style.opacity = clamp((st - 300) / 1100, 0, 1);
+      mushPanY += (0 - mushPanY) * 0.08;
+      elHiro.style.opacity = 0;
+    } else if (sub === 2) {
+      elHirobook.style.opacity = 0;
+      elHirocover.style.opacity = Math.max(0, 1 - st / 500);
+      const k = easeIO(clamp(st / SC.hiro.panMs, 0, 1));
+      mushPanY = -k * H * 0.9;
+      elHiro.style.opacity = (st > SC.hiro.panMs * 0.6) ? 1 : 0;
     }
-    requestAnimationFrame(frame);
-    perfCheck(dt);
-    return;
+  } else {
+    elHirobook.style.opacity = 0;
+    elHirocover.style.opacity = 0;
   }
 
   // Canvas clear-alpha (motion-blur trail) per scene.
   let clearA = 0.20;
-  if (phase === "scene") clearA = [SC.sphere.clear, 0.3, SC.book.clear, SC.vortex.clear][scene];
+  if (phase === "scene") clearA = [SC.sphere.clear, 0.3, SC.book.clear, SC.vortex.clear, SC.end.clear][scene];
   ctx.fillStyle = "rgba(0,0,0," + clearA + ")";
   ctx.fillRect(0, 0, W, H);
   ctx.fillStyle = "#fff";
@@ -824,7 +1260,8 @@ function frame(ts) {
     if (closing) {
       const k = easeIO(clamp((simT - closeT0) / SC.book.closeMs, 0, 1));
       bookOpenAmt = 1 - k;
-      if (k >= 1) { gotoScene(3, 0); }
+      // Wait a full hold-time after the book is closed before moving to scene 4, so the close reads cleanly.
+      if (k >= 1 && (simT - closeT0) > SC.book.closeMs + 600) { gotoScene(3, 0); }
     } else if (sub === 0) {
       bookOpenAmt += (0 - bookOpenAmt) * 0.12;
     } else {
@@ -863,9 +1300,28 @@ function frame(ts) {
     } else if (!paused) {
       if (phase === "intro") ambientDrift(p, simS);
       else {
-        if (scene === 0) { sub === 0 ? targetsForSphere(p, simT - sceneT0) : targetsForCards(p); }
+        if (scene === 0) {
+          if (sub === 0) targetsForSphere(p, simT - sceneT0);
+          else {
+            // Scene 1.B: scatter what was the sphere across the whole canvas, low alpha.
+            // The flickering problem words become the focal point instead.
+            const a = p.ph * 13.7 + p.sp * 4.3;
+            p.tx = W * (0.04 + ((Math.sin(a) + 1) / 2) * 0.92);
+            p.ty = H * (0.04 + ((Math.cos(a * 1.7) + 1) / 2) * 0.92);
+            p.ta = 0.08 + 0.10 * (0.5 + 0.5 * Math.sin((simT / 1000) * p.sp + p.ph));
+          }
+        }
+        else if (scene === 1) targetsForHiroshima(p, simT - sceneT0);
         else if (scene === 2) targetsForBook(p);
         else if (scene === 3) targetsForVortex(p, dt);
+        else if (scene === 4) {
+          // Intensity ramps from 0 to 1 over the burst, stays high through dive, fades during credits.
+          let intensity = 0;
+          if (sub === 0) intensity = clamp(st / SC.end.burstMs, 0, 1);
+          else if (sub === 1) intensity = 1;
+          else intensity = Math.max(0, 1 - st / 800);
+          targetsForBlackhole(p, st, intensity);
+        }
         else ambientDrift(p, simS);
         p.x += (p.tx - p.x) * SC.ease;
         p.y += (p.ty - p.y) * SC.ease;
@@ -874,7 +1330,14 @@ function frame(ts) {
     if (!paused) p.alpha += (p.ta - p.alpha) * SC.alphaEase;
     if (p.alpha > 0.003) {
       ctx.globalAlpha = clamp(p.alpha, 0, 1);
-      ctx.fillRect(p.x, p.y, p.size, p.size);
+      // Hiroshima scene: tint some particles red. Other scenes stay white.
+      if (phase === "scene" && scene === 1 && p.isRed) {
+        ctx.fillStyle = "#ff4030";
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+        ctx.fillStyle = "#fff";
+      } else {
+        ctx.fillRect(p.x, p.y, p.size, p.size);
+      }
     }
   }
   ctx.globalAlpha = 1;
@@ -895,21 +1358,33 @@ function frame(ts) {
     ctx.globalAlpha = 1;
   }
 
-  // Scene 1.B card stagger.
+  // Scene 1.B card stagger + tagline + flickering problem-words.
   if (phase === "scene" && scene === 0 && sub === 1) {
     for (let i = 0; i < 4; i++) {
       $("card" + i).style.opacity =
         clamp((st - i * SC.cardStaggerMs) / SC.cardFadeMs, 0, 1);
     }
+    // Tagline fades in slightly after the cards start landing.
+    elTagline.style.opacity = clamp((st - 1500) / 1400, 0, 1);
+    // Problem-word cloud fades in after the tagline lands.
+    elProblems.style.opacity = clamp((st - 3000) / 1500, 0, 1);
   }
 
   // Scene 3 page reveals + side panel timing.
-  if (phase === "scene" && scene === 2 && !closing) {
-    elLeft.style.opacity = (sub === 2) ? 1 : 0;
-    if (sub >= 3) {
-      const ss = SC.book.shapeshiftMs;
-      elRight.style.opacity = clamp((st - ss * 0.55) / 900, 0, 1);
-      elSide.style.opacity = clamp((st - (ss + SC.book.sideDelayMs)) / 1100, 0, 1);
+  if (phase === "scene" && scene === 2) {
+    if (closing) {
+      // Once closing starts, fade out all the text overlays so the close reads clean.
+      elLeft.style.opacity = 0;
+      elRight.style.opacity = 0;
+      elSide.style.opacity = 0;
+      elTitle.style.opacity = 0;
+    } else {
+      elLeft.style.opacity = (sub === 2) ? 1 : 0;
+      if (sub >= 3) {
+        const ss = SC.book.shapeshiftMs;
+        elRight.style.opacity = clamp((st - ss * 0.55) / 900, 0, 1);
+        elSide.style.opacity = clamp((st - (ss + SC.book.sideDelayMs)) / 1100, 0, 1);
+      }
     }
   }
 
@@ -927,6 +1402,54 @@ function frame(ts) {
       const settled = (coverCards.length - 1) * SC.vortex.coverStaggerMs + SC.vortex.coverFadeMs + 500;
       elFinal.style.opacity = cT > settled ? 1 : 0;
     }
+  }
+
+  // Scene 5 (end): black hole forms, camera dives in, credits scroll.
+  if (phase === "scene" && scene === 4) {
+    const end = SC.end;
+    let fadeIn = 0, zoom = 1, blackOverlay = 0;
+    if (sub === 0) {
+      // Burst → black hole stabilizes
+      fadeIn = clamp(st / end.burstMs, 0, 1);
+      zoom = 1.0;
+      blackOverlay = 0;
+    } else if (sub === 1) {
+      // Dive into the hole
+      const k = easeIO(clamp(st / end.diveMs, 0, 1));
+      fadeIn = 1;
+      zoom = 1 + k * 5.2;
+      blackOverlay = clamp((st - end.diveMs * 0.55) / end.fadeBlackMs, 0, 1);
+    } else if (sub === 2) {
+      // Pure black + credits roll
+      fadeIn = 0;
+      zoom = 6;
+      blackOverlay = 1;
+    }
+    if (fadeIn > 0) drawBlackhole(ctx, fadeIn, zoom);
+    elEndfade.style.opacity = blackOverlay;
+    // Credits visibility + scroll
+    if (sub === 2) {
+      if (!elCredits._rolling) {
+        elCredits._rolling = true;
+        // Reset, then animate after a tick.
+        elCreditsInner.style.transition = "none";
+        elCreditsInner.style.transform = "translateX(-50%) translateY(0)";
+        // Force reflow so the next transition takes hold
+        void elCreditsInner.offsetHeight;
+        elCreditsInner.style.transition = "transform " + (end.creditsScrollMs / 1000) + "s linear";
+        const total = elCreditsInner.scrollHeight + window.innerHeight * 0.4;
+        elCreditsInner.style.transform = "translateX(-50%) translateY(-" + total + "px)";
+        elCredits.style.opacity = 1;
+      }
+    } else {
+      if (elCredits._rolling) {
+        elCredits._rolling = false;
+        elCredits.style.opacity = 0;
+      }
+    }
+  } else if (elCredits._rolling) {
+    elCredits._rolling = false;
+    elCredits.style.opacity = 0;
   }
 
   perfCheck(dt);
